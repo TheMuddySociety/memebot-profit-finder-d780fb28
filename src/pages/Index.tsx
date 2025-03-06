@@ -5,6 +5,7 @@ import { ProfitSimulator } from "@/components/dashboard/ProfitSimulator";
 import { MemeScanner } from "@/components/dashboard/MemeScanner";
 import { LaunchCalendar } from "@/components/dashboard/LaunchCalendar";
 import { PerformanceMetrics } from "@/components/dashboard/PerformanceMetrics";
+import { BlockchainAnalytics } from "@/components/dashboard/BlockchainAnalytics";
 
 const Index = () => {
   return (
@@ -18,7 +19,7 @@ const Index = () => {
               Memecoin Profit Finder
             </h1>
             <p className="text-lg text-muted-foreground">
-              Discover trending Solana memecoins, analyze risks, and maximize potential returns
+              Discover trending Solana memecoins, analyze on-chain data, and maximize potential returns
             </p>
           </section>
           
@@ -27,6 +28,8 @@ const Index = () => {
             
             <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-6">
               <TrendingCoins />
+              
+              <BlockchainAnalytics />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ProfitSimulator />
