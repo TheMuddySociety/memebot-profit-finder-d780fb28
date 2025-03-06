@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -24,9 +23,9 @@ interface MemeToken {
   tags: string[];
   liquidity: number;
   holders: number;
-  tokenAddress?: string; // Add Solana token address
-  onChainLiquidity?: number | null; // Add on-chain liquidity data
-  onChainHolders?: number; // Add on-chain holders count
+  tokenAddress: string; // Ensure tokenAddress is required in the interface
+  onChainLiquidity?: number | null;
+  onChainHolders?: number;
 }
 
 export function TrendingCoins() {
@@ -36,29 +35,22 @@ export function TrendingCoins() {
   const [sortDirection, setSortDirection] = useState('desc');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Enhance memecoins with on-chain data
   const enrichWithOnChainData = async (coins: MemeToken[]) => {
     const enrichedCoins = [...coins];
     
-    // Add simulated token addresses if they don't exist
     enrichedCoins.forEach((coin, index) => {
       if (!coin.tokenAddress) {
-        // Generate a simulated token address for demo purposes
         coin.tokenAddress = `So1ana${index}MemeToken${coin.id.slice(0, 8)}111111111111111`;
       }
     });
     
-    // Fetch on-chain data for each token
     for (const coin of enrichedCoins) {
       if (coin.tokenAddress) {
         try {
-          // Get on-chain liquidity data
           const liquidity = await SolanaService.getTokenLiquidity(coin.tokenAddress);
           if (liquidity !== null) {
             coin.onChainLiquidity = liquidity;
           }
-          
-          // Simulated on-chain holders (in a real app, you'd fetch this from the blockchain)
           coin.onChainHolders = Math.floor(Math.random() * 10000) + 100;
         } catch (error) {
           console.error(`Error fetching on-chain data for ${coin.symbol}:`, error);
@@ -70,17 +62,13 @@ export function TrendingCoins() {
   };
 
   useEffect(() => {
-    // Simulate API fetch with on-chain data
     const fetchData = async () => {
       setLoading(true);
       
-      // Initialize Solana connection
       SolanaService.initConnection();
       
-      // In a real app, you would fetch from an API
       try {
         setTimeout(async () => {
-          // Get mock data and enrich it with on-chain data
           const enrichedCoins = await enrichWithOnChainData(mockMemecoins);
           setMemecoins(enrichedCoins);
           setLoading(false);
@@ -95,14 +83,12 @@ export function TrendingCoins() {
 
     fetchData();
     
-    // Set up price monitoring
     const tokenAddresses = mockMemecoins
       .filter(coin => coin.tokenAddress)
       .map(coin => coin.tokenAddress as string);
       
     const stopMonitoring = SolanaService.startPriceMonitoring(tokenAddresses, (updates) => {
       console.log('Price updates:', updates);
-      // In a real app, you would update the prices based on these updates
     });
     
     return () => {
@@ -126,7 +112,6 @@ export function TrendingCoins() {
 
   const sortedMemecoins = [...memecoins].sort((a, b) => {
     const direction = sortDirection === 'asc' ? 1 : -1;
-    // @ts-ignore
     return direction * (a[sortBy] - b[sortBy]);
   });
 

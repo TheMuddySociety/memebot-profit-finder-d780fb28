@@ -13,6 +13,7 @@ export const mockMemecoins = [
     tags: ["Original", "Dog"],
     liquidity: 4500000,
     holders: 72500,
+    tokenAddress: "So1ana0MemeTokendoge111111111111111" // Added tokenAddress
   },
   {
     id: "shib",
@@ -27,6 +28,7 @@ export const mockMemecoins = [
     tags: ["Dog", "Community"],
     liquidity: 5200000,
     holders: 125000,
+    tokenAddress: "So1ana1MemeTokenshib111111111111111" // Added tokenAddress
   },
   {
     id: "pepe",
@@ -41,6 +43,7 @@ export const mockMemecoins = [
     tags: ["Meme", "Frog"],
     liquidity: 2100000,
     holders: 45000,
+    tokenAddress: "So1ana2MemeTokenpepe111111111111111" // Added tokenAddress
   },
   {
     id: "floki",
@@ -55,6 +58,7 @@ export const mockMemecoins = [
     tags: ["Dog", "Viking"],
     liquidity: 1500000,
     holders: 28000,
+    tokenAddress: "So1ana3MemeTokenfloki111111111111111" // Added tokenAddress
   },
   {
     id: "samo",
@@ -69,6 +73,7 @@ export const mockMemecoins = [
     tags: ["Solana", "Dog"],
     liquidity: 750000,
     holders: 15000,
+    tokenAddress: "So1ana4MemeTokensamo111111111111111" // Added tokenAddress
   },
   {
     id: "bonk",
@@ -83,6 +88,7 @@ export const mockMemecoins = [
     tags: ["Solana", "Dog"],
     liquidity: 1200000,
     holders: 32000,
+    tokenAddress: "So1ana5MemeTokenbonk111111111111111" // Added tokenAddress
   },
   {
     id: "cat",
@@ -97,6 +103,7 @@ export const mockMemecoins = [
     tags: ["Cat", "NFT"],
     liquidity: 520000,
     holders: 9500,
+    tokenAddress: "So1ana6MemeTokencat111111111111111" // Added tokenAddress
   },
   {
     id: "wojak",
@@ -111,6 +118,7 @@ export const mockMemecoins = [
     tags: ["Meme", "DAO"],
     liquidity: 380000,
     holders: 7200,
+    tokenAddress: "So1ana7MemeTokenwojak111111111111111" // Added tokenAddress
   }
 ];
 
