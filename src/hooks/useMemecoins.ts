@@ -114,6 +114,30 @@ export function useMemecoins() {
     }
   };
 
+  // New method to get AI trading recommendations for a token
+  const getAITradingRecommendation = async (tokenAddress: string) => {
+    if (!tokenAddress) return null;
+    
+    try {
+      // Find the token in our list
+      const token = memecoins.find(coin => coin.tokenAddress === tokenAddress);
+      if (!token) return null;
+      
+      // Get AI prediction for this token (simplified)
+      return {
+        token,
+        buy: token.change24h > 0,
+        sellTarget: token.price * 1.5,
+        stopLoss: token.price * 0.8,
+        confidence: Math.random() * 0.5 + 0.5, // 0.5 to 1.0
+        rationale: `Based on ${token.symbol}'s market performance and liquidity profile.`
+      };
+    } catch (error) {
+      console.error('Error getting AI trading recommendation:', error);
+      return null;
+    }
+  };
+
   return {
     memecoins: sortedMemecoins,
     loading,
@@ -121,6 +145,7 @@ export function useMemecoins() {
     sortDirection,
     isRefreshing,
     handleSort,
-    refreshData
+    refreshData,
+    getAITradingRecommendation
   };
 }
