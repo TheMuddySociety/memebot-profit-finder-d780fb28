@@ -1,26 +1,49 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Wallet } from "lucide-react";
+import { Moon, Sun, Wallet, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true); // Default to true for dashboard
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleConnect = () => {
-    setIsConnected(true);
+  useEffect(() => {
+    // Verify wallet connection on mount
+    const checkConnection = async () => {
+      // In a real app, check if wallet is connected and has required NFTs/tokens
+      const hasValidConnection = localStorage.getItem('walletConnected') === 'true';
+      
+      if (!hasValidConnection) {
+        toast({
+          title: "Wallet not connected",
+          description: "Please connect your wallet from the landing page",
+          variant: "destructive"
+        });
+        navigate('/');
+      }
+    };
+    
+    checkConnection();
+  }, [navigate, toast]);
+
+  const handleDisconnect = () => {
+    localStorage.removeItem('walletConnected');
+    setIsConnected(false);
     toast({
-      title: "Wallet Connected",
-      description: "Your wallet has been successfully connected",
+      title: "Wallet Disconnected",
+      description: "Your wallet has been disconnected",
     });
+    navigate('/');
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-effect">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">
         <div className="flex items-center space-x-2">
           <img 
@@ -28,7 +51,7 @@ export function Header() {
             alt="SAVAG3 D3 Tradez" 
             className="w-10 h-10 animate-float"
           />
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-memecoin-gradient animate-gradient-shift">
+          <span className="text-xl font-bold text-red-600">
             SAVAG3 D3 Tradez
           </span>
         </div>
@@ -48,21 +71,24 @@ export function Header() {
             <span className="sr-only">Toggle theme</span>
           </Button>
           
-          {!isConnected ? (
-            <Button 
-              onClick={handleConnect}
-              className="bg-solana hover:bg-solana-dark text-primary-foreground flex items-center gap-2 rounded-full"
-            >
-              <Wallet className="h-4 w-4" />
-              Connect Wallet
-            </Button>
-          ) : (
-            <Avatar className="border-2 border-solana animate-pulse-glow">
-              <AvatarImage src="https://source.boringavatars.com/beam/40/user?colors=14F195,0ca36c,4ffab5" />
-              <AvatarFallback className="bg-memecoin-dark text-solana">
-                ME
-              </AvatarFallback>
-            </Avatar>
+          {isConnected && (
+            <div className="flex items-center gap-4">
+              <Avatar className="border-2 border-red-600 animate-pulse">
+                <AvatarImage src="https://source.boringavatars.com/beam/40/user?colors=FF4136,222222,FFFFFF" />
+                <AvatarFallback className="bg-gray-900 text-red-600">
+                  ME
+                </AvatarFallback>
+              </Avatar>
+              
+              <Button 
+                onClick={handleDisconnect}
+                variant="ghost"
+                className="text-gray-400 hover:text-white flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Disconnect
+              </Button>
+            </div>
           )}
         </div>
       </div>
