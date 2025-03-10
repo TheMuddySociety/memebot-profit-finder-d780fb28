@@ -1,9 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 // Admin wallet addresses for direct access to admin dashboard
 const ADMIN_WALLETS = [
@@ -14,21 +16,19 @@ const ADMIN_WALLETS = [
 const Landing = () => {
   const navigate = useNavigate();
   const [connecting, setConnecting] = useState(false);
+  const { publicKey, connected } = useWallet();
   
-  const handleConnect = async () => {
+  // Check if wallet is connected
+  useEffect(() => {
+    if (connected && publicKey) {
+      handleWalletConnected(publicKey.toString());
+    }
+  }, [connected, publicKey]);
+  
+  const handleWalletConnected = async (walletAddress: string) => {
     setConnecting(true);
     
     try {
-      // Simulate wallet connection and verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, randomly generate a wallet address (or use admin)
-      // In production, this would come from the actual wallet connection
-      const isAdminDemo = Math.random() > 0.7; // 30% chance of simulating admin login
-      const walletAddress = isAdminDemo 
-        ? ADMIN_WALLETS[Math.floor(Math.random() * ADMIN_WALLETS.length)]
-        : `So1ana${Math.random().toString(36).substring(2, 10)}`;
-      
       console.log("Connected wallet:", walletAddress);
       localStorage.setItem('connectedWallet', walletAddress);
       
@@ -75,23 +75,9 @@ const Landing = () => {
             className="w-48 h-48 mb-8 animate-pulse-glow" 
           />
           
-          <Button 
-            onClick={handleConnect}
-            disabled={connecting}
-            className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 rounded-full px-10 py-8 text-xl shadow-lg hover:shadow-red-600/20 transition-all"
-          >
-            {connecting ? (
-              <>
-                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Connecting...
-              </>
-            ) : (
-              <>
-                <Wallet className="h-6 w-6" />
-                ENTER
-              </>
-            )}
-          </Button>
+          <div className="flex flex-col items-center">
+            <WalletMultiButton className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 rounded-full px-10 py-6 text-xl shadow-lg hover:shadow-red-600/20 transition-all" />
+          </div>
         </div>
         
         <p className="text-gray-400 mt-6 text-sm">

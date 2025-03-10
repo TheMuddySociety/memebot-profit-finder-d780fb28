@@ -1,11 +1,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Wallet, LogOut, Shield } from "lucide-react";
+import { Moon, Sun, Shield, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate, Link } from "react-router-dom";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 // Admin wallet addresses for checking admin status
 const ADMIN_WALLETS = [
@@ -15,18 +17,15 @@ const ADMIN_WALLETS = [
 
 export function Header() {
   const { theme, setTheme } = useTheme();
-  const [isConnected, setIsConnected] = useState(true); // Default to true for dashboard
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { publicKey, connected, disconnect } = useWallet();
 
   useEffect(() => {
     // Verify wallet connection on mount
     const checkConnection = async () => {
-      // In a real app, check if wallet is connected and has required NFTs/tokens
-      const hasValidConnection = localStorage.getItem('walletConnected') === 'true';
-      
-      if (!hasValidConnection) {
+      if (!connected || !publicKey) {
         toast({
           title: "Wallet not connected",
           description: "Please connect your wallet from the landing page",
@@ -37,17 +36,21 @@ export function Header() {
       }
       
       // Check if admin
-      const connectedWallet = localStorage.getItem('connectedWallet') || "";
-      setIsAdmin(ADMIN_WALLETS.includes(connectedWallet));
+      const walletAddress = publicKey.toString();
+      setIsAdmin(ADMIN_WALLETS.includes(walletAddress));
+      
+      // Update local storage
+      localStorage.setItem('connectedWallet', walletAddress);
+      localStorage.setItem('walletConnected', 'true');
     };
     
     checkConnection();
-  }, [navigate, toast]);
+  }, [navigate, toast, connected, publicKey]);
 
   const handleDisconnect = () => {
+    disconnect();
     localStorage.removeItem('walletConnected');
     localStorage.removeItem('connectedWallet');
-    setIsConnected(false);
     toast({
       title: "Wallet Disconnected",
       description: "Your wallet has been disconnected",
@@ -103,12 +106,12 @@ export function Header() {
             <span className="sr-only">Toggle theme</span>
           </Button>
           
-          {isConnected && (
+          {connected && publicKey && (
             <div className="flex items-center gap-4">
               <Avatar className="border-2 border-red-600 animate-pulse">
-                <AvatarImage src="https://source.boringavatars.com/beam/40/user?colors=FF4136,222222,FFFFFF" />
+                <AvatarImage src={`https://source.boringavatars.com/beam/40/${publicKey.toString()}?colors=FF4136,222222,FFFFFF`} />
                 <AvatarFallback className="bg-gray-900 text-red-600">
-                  ME
+                  {publicKey.toString().substring(0, 2)}
                 </AvatarFallback>
               </Avatar>
               
@@ -121,6 +124,10 @@ export function Header() {
                 Disconnect
               </Button>
             </div>
+          )}
+          
+          {!connected && (
+            <WalletMultiButton />
           )}
         </div>
       </div>
