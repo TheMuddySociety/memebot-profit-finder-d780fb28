@@ -43,23 +43,31 @@ const Landing = () => {
           Exclusive Trading Tool for NFT Collectors and Token Holders
         </p>
         
-        <Button 
-          onClick={handleConnect}
-          disabled={connecting}
-          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 rounded-full px-10 py-8 text-xl shadow-lg hover:shadow-red-600/20 transition-all"
-        >
-          {connecting ? (
-            <>
-              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Connecting...
-            </>
-          ) : (
-            <>
-              <Wallet className="h-6 w-6" />
-              ENTER
-            </>
-          )}
-        </Button>
+        <div className="flex flex-col items-center">
+          <img 
+            src="/lovable-uploads/951ca7c8-2171-4218-af7b-a98046f54e14.png" 
+            alt="Demon Bull Logo" 
+            className="w-48 h-48 mb-8 animate-pulse-glow" 
+          />
+          
+          <Button 
+            onClick={handleConnect}
+            disabled={connecting}
+            className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 rounded-full px-10 py-8 text-xl shadow-lg hover:shadow-red-600/20 transition-all"
+          >
+            {connecting ? (
+              <>
+                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Connecting...
+              </>
+            ) : (
+              <>
+                <Wallet className="h-6 w-6" />
+                ENTER
+              </>
+            )}
+          </Button>
+        </div>
         
         <p className="text-gray-400 mt-6 text-sm">
           Connect your Solana wallet to verify ownership and access the platform
