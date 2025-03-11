@@ -70,9 +70,9 @@ const Landing = () => {
         
         <div className="flex flex-col items-center">
           <img 
-            src="/lovable-uploads/951ca7c8-2171-4218-af7b-a98046f54e14.png" 
-            alt="Demon Bull Logo" 
-            className="w-48 h-48 mb-8 animate-pulse-glow" 
+            src="/lovable-uploads/034236bf-7a4a-4d94-b426-562b05b5288a.png" 
+            alt="SAVAG3 Bull Logo" 
+            className="w-64 h-64 mb-8 animate-pulse-glow" 
           />
           
           <div className="flex flex-col items-center">
