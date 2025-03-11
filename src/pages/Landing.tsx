@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -69,12 +68,26 @@ const Landing = () => {
         </p>
         
         <div className="flex flex-col items-center">
-          <div className="w-48 h-48 mb-8 relative">
+          <div className="w-64 h-64 mb-8 relative">
             <img 
               src="/lovable-uploads/034236bf-7a4a-4d94-b426-562b05b5288a.png" 
               alt="SAVAG3 Bull Logo" 
-              className="w-full h-full object-contain animate-pulse-glow" 
+              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,65,54,0.5)] rounded-3xl transform-gpu transition-all duration-500 hover:rotate-3 hover:scale-105" 
+              style={{
+                transform: "perspective(1000px) rotateX(10deg) rotateY(5deg)",
+                boxShadow: "0 10px 30px -5px rgba(255, 65, 54, 0.3), 0 0 15px rgba(255, 65, 54, 0.5) inset",
+                background: "linear-gradient(145deg, rgba(50, 0, 0, 0.4), rgba(100, 0, 0, 0.1))",
+                border: "2px solid rgba(255, 65, 54, 0.2)",
+                backdropFilter: "blur(5px)",
+              }}
             />
+            <div 
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              style={{
+                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.1) 100%)",
+                transform: "perspective(1000px) rotateX(10deg) rotateY(5deg)",
+              }}
+            ></div>
           </div>
           
           <div className="flex flex-col items-center">
