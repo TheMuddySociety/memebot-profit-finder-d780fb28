@@ -4,16 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ArrowDownUp, RefreshCw, DollarSign, Info } from "lucide-react";
+import { ArrowDownUp, RefreshCw, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { toast } from "sonner";
 import { SwapService } from '@/services/SwapService';
 import { formatNumber } from "@/utils/format";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export function TokenSwap() {
   const { connection } = useConnection();
-  const wallet = useWallet();
+  const { publicKey, signTransaction, connected } = useWallet();
   const [isSwapping, setIsSwapping] = useState(false);
   const [tokens, setTokens] = useState<any[]>([]);
   const [fromToken, setFromToken] = useState<string>('');
@@ -65,7 +66,7 @@ export function TokenSwap() {
   };
 
   const handleSwap = async () => {
-    if (!wallet.connected) {
+    if (!connected || !publicKey || !signTransaction) {
       toast.error("Please connect your wallet first");
       return;
     }
@@ -78,21 +79,50 @@ export function TokenSwap() {
     setIsSwapping(true);
     
     try {
-      const txSignature = await SwapService.swapTokens(
-        connection,
-        wallet,
+      // Get the actual quote first
+      const quoteResult = await SwapService.getJupiterQuote(
         fromToken,
         toToken,
         amount,
         slippage * 100 // Convert percentage to basis points
       );
       
-      if (txSignature) {
-        console.log('Swap transaction:', txSignature);
+      if (!quoteResult) {
+        throw new Error("Failed to get quote");
       }
+      
+      // Get the swap transaction
+      const swapTx = await SwapService.getJupiterSwapTransaction(
+        quoteResult,
+        publicKey.toString()
+      );
+      
+      if (!swapTx) {
+        throw new Error("Failed to prepare transaction");
+      }
+      
+      // Sign the transaction with the connected wallet
+      const signedTx = await signTransaction(swapTx);
+      
+      // Send the transaction
+      const txSignature = await connection.sendRawTransaction(
+        signedTx.serialize()
+      );
+      
+      console.log('Swap transaction signature:', txSignature);
+      toast.success("Swap transaction sent!");
+      
+      // Wait for confirmation
+      const confirmation = await connection.confirmTransaction(txSignature);
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed");
+      }
+      
+      toast.success("Swap completed successfully!");
+      
     } catch (error) {
       console.error('Error performing swap:', error);
-      toast.error("Swap failed");
+      toast.error(`Swap failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSwapping(false);
     }
@@ -255,25 +285,27 @@ export function TokenSwap() {
           </div>
         )}
         
-        {/* Swap Button */}
-        <Button 
-          onClick={handleSwap} 
-          className="w-full bg-solana hover:bg-solana-dark text-primary-foreground" 
-          disabled={isSwapping || !wallet.connected || !quote}
-        >
-          {isSwapping ? (
-            <span className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4 animate-spin" /> Swapping...
-            </span>
-          ) : !wallet.connected ? (
-            "Connect Wallet to Swap"
-          ) : (
-            "Swap"
-          )}
-        </Button>
+        {/* Connect Wallet or Swap Button */}
+        {!connected ? (
+          <WalletMultiButton className="w-full bg-solana hover:bg-solana-dark text-primary-foreground" />
+        ) : (
+          <Button 
+            onClick={handleSwap} 
+            className="w-full bg-solana hover:bg-solana-dark text-primary-foreground" 
+            disabled={isSwapping || !quote}
+          >
+            {isSwapping ? (
+              <span className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin" /> Swapping...
+              </span>
+            ) : (
+              "Swap"
+            )}
+          </Button>
+        )}
       </CardContent>
       <CardFooter className="text-xs text-center text-muted-foreground">
-        Powered by V6 Swap API. Trading incurs a 0.25% fee.
+        Powered by Jupiter V6 API. Trading incurs a 0.25% fee.
       </CardFooter>
     </Card>
   );
