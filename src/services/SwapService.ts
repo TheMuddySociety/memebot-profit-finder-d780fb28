@@ -31,28 +31,32 @@ export class SwapService {
 
       console.log(`Swapping ${amount} of ${fromToken} to ${toToken} with ${slippageBps} bps slippage`);
       
-      // In a real implementation using Jupiter V6 API:
-      // 1. Get quote from Jupiter API
-      // const quoteResponse = await this.getJupiterQuote(fromToken, toToken, amount, slippageBps);
-      // if (!quoteResponse) return null;
+      // Get quote from Jupiter API
+      const quoteResponse = await this.getJupiterQuote(fromToken, toToken, amount, slippageBps);
+      if (!quoteResponse) return null;
       
-      // 2. Get swap transaction from Jupiter API
-      // const swapTransaction = await this.getJupiterSwapTransaction(quoteResponse.quoteResponse, wallet.publicKey.toString());
-      // if (!swapTransaction) return null;
+      // Get swap transaction from Jupiter API
+      const swapTransaction = await this.getJupiterSwapTransaction(quoteResponse, wallet.publicKey.toString());
+      if (!swapTransaction) return null;
       
-      // 3. Sign and send the transaction
-      // const signedTx = await wallet.signTransaction(swapTransaction);
-      // const txid = await connection.sendRawTransaction(signedTx.serialize());
-      // await connection.confirmTransaction(txid);
+      // Sign and send the transaction
+      const signedTx = await wallet.signTransaction(swapTransaction);
+      const txid = await connection.sendRawTransaction(signedTx.serialize());
       
-      // For now, we'll show a toast to indicate this is a demo
-      toast.info("Swap functionality is in demo mode");
-      toast.success(`Simulated swap of ${amount} tokens completed`);
+      toast.success(`Swap transaction sent! ${txid.substring(0, 8)}...`);
       
-      return "simulated_transaction_signature";
+      // Confirm transaction
+      const confirmation = await connection.confirmTransaction(txid);
+      if (confirmation.value.err) {
+        toast.error(`Transaction failed: ${confirmation.value.err}`);
+        return null;
+      }
+      
+      toast.success("Swap completed successfully!");
+      return txid;
     } catch (error) {
       console.error('Error performing swap:', error);
-      toast.error("Failed to perform swap");
+      toast.error(`Failed to perform swap: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return null;
     }
   }
@@ -83,6 +87,7 @@ export class SwapService {
       }
       
       const quoteResponse = await response.json();
+      console.log('Quote received:', quoteResponse);
       return quoteResponse;
     } catch (error) {
       console.error('Error getting Jupiter quote:', error);
@@ -158,23 +163,20 @@ export class SwapService {
     routeInfo: string;
   } | null> {
     try {
-      // In a real implementation, we would fetch the actual quote from Jupiter
       console.log(`Getting quote for ${amount} of ${fromToken} to ${toToken}`);
       
-      try {
-        // Try to get a real quote from Jupiter API
-        const jupiterQuote = await this.getJupiterQuote(fromToken, toToken, amount, 100);
-        
-        if (jupiterQuote && jupiterQuote.outAmount) {
-          return {
-            inAmount: amount,
-            outAmount: parseFloat(jupiterQuote.outAmount),
-            priceImpact: jupiterQuote.priceImpactPct || Math.random() * 1.5,
-            routeInfo: "V6 Swap via Jupiter"
-          };
-        }
-      } catch (error) {
-        console.log('Failed to get Jupiter quote, using simulated data', error);
+      // Get real quote from Jupiter API
+      const jupiterQuote = await this.getJupiterQuote(fromToken, toToken, amount, 100);
+      
+      if (jupiterQuote && jupiterQuote.outAmount) {
+        return {
+          inAmount: amount,
+          outAmount: parseFloat(jupiterQuote.outAmount),
+          priceImpact: jupiterQuote.priceImpactPct || 0,
+          routeInfo: jupiterQuote.routePlan 
+            ? `${jupiterQuote.routePlan.length} hop(s) via Jupiter V6`
+            : "Jupiter V6 Direct Swap"
+        };
       }
       
       // Fallback to simulated quote
