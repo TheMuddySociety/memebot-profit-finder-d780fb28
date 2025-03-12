@@ -14,6 +14,7 @@ export class SwapService {
    * @param amount Amount to swap in lamports
    * @param slippageBps Slippage tolerance in basis points (100 = 1%)
    * @param maxAccounts Optional parameter to limit the number of accounts in the transaction
+   * @param priorityLevel Optional priority level for transaction "low", "medium", "high", "veryHigh"
    * @returns Transaction signature or null if failed
    */
   static async swapTokens(
@@ -23,7 +24,8 @@ export class SwapService {
     toToken: string,
     amount: number,
     slippageBps: number = 100,
-    maxAccounts?: number
+    maxAccounts?: number,
+    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh'
   ): Promise<string | null> {
     try {
       if (!wallet.publicKey || !wallet.signTransaction) {
@@ -38,7 +40,11 @@ export class SwapService {
       if (!quoteResponse) return null;
       
       // Get swap transaction from Jupiter API
-      const swapTransaction = await this.getJupiterSwapTransaction(quoteResponse, wallet.publicKey.toString());
+      const swapTransaction = await this.getJupiterSwapTransaction(
+        quoteResponse, 
+        wallet.publicKey.toString(),
+        priorityLevel
+      );
       if (!swapTransaction) return null;
       
       // Sign and send the transaction
@@ -109,23 +115,36 @@ export class SwapService {
    * Get Jupiter API swap transaction
    * @param quoteResponse Quote response from Jupiter API
    * @param userPublicKey User's wallet public key
+   * @param priorityLevel Optional priority level for transaction
    * @returns Transaction object or null if failed
    */
   static async getJupiterSwapTransaction(
     quoteResponse: any,
-    userPublicKey: string
+    userPublicKey: string,
+    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh'
   ): Promise<VersionedTransaction | null> {
     try {
       // Jupiter V6 API endpoint for swap transactions
       const swapUrl = 'https://quote-api.jup.ag/v6/swap';
       
-      const swapRequestBody = {
+      const swapRequestBody: any = {
         quoteResponse,
         userPublicKey,
         wrapAndUnwrapSol: true, // Auto wrap/unwrap SOL
+        dynamicComputeUnitLimit: true, // Allow dynamic compute limit instead of max 1,400,000
       };
       
-      console.log('Fetching Jupiter swap transaction');
+      // Add priority fee if specified
+      if (priorityLevel) {
+        swapRequestBody.prioritizationFeeLamports = {
+          priorityLevelWithMaxLamports: {
+            maxLamports: 10000000, // 0.01 SOL max
+            priorityLevel: priorityLevel
+          }
+        };
+      }
+      
+      console.log('Fetching Jupiter swap transaction', swapRequestBody);
       const response = await fetch(swapUrl, {
         method: 'POST',
         headers: {

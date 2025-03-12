@@ -16,6 +16,13 @@ import {
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function TokenSwap() {
   const { connection } = useConnection();
@@ -27,6 +34,7 @@ export function TokenSwap() {
   const [amount, setAmount] = useState<number>(1);
   const [slippage, setSlippage] = useState<number>(1); // 1%
   const [maxAccounts, setMaxAccounts] = useState<number | undefined>(undefined);
+  const [priorityLevel, setPriorityLevel] = useState<'low' | 'medium' | 'high' | 'veryHigh' | undefined>(undefined);
   const [quote, setQuote] = useState<any>(null);
   const [isGettingQuote, setIsGettingQuote] = useState(false);
 
@@ -86,47 +94,26 @@ export function TokenSwap() {
     setIsSwapping(true);
     
     try {
-      // Get the actual quote first
-      const quoteResult = await SwapService.getJupiterQuote(
+      // Perform the swap with priority fee if set
+      const txSignature = await SwapService.swapTokens(
+        connection,
+        {
+          publicKey,
+          signTransaction,
+        },
         fromToken,
         toToken,
         amount,
         slippage * 100, // Convert percentage to basis points
-        maxAccounts
+        maxAccounts,
+        priorityLevel
       );
       
-      if (!quoteResult) {
-        throw new Error("Failed to get quote");
+      if (!txSignature) {
+        throw new Error("Failed to perform swap");
       }
-      
-      // Get the swap transaction
-      const swapTx = await SwapService.getJupiterSwapTransaction(
-        quoteResult,
-        publicKey.toString()
-      );
-      
-      if (!swapTx) {
-        throw new Error("Failed to prepare transaction");
-      }
-      
-      // Sign the transaction with the connected wallet
-      const signedTx = await signTransaction(swapTx);
-      
-      // Send the transaction
-      const txSignature = await connection.sendRawTransaction(
-        signedTx.serialize()
-      );
       
       console.log('Swap transaction signature:', txSignature);
-      toast.success("Swap transaction sent!");
-      
-      // Wait for confirmation
-      const confirmation = await connection.confirmTransaction(txSignature);
-      if (confirmation.value.err) {
-        throw new Error("Transaction failed");
-      }
-      
-      toast.success("Swap completed successfully!");
       
     } catch (error) {
       console.error('Error performing swap:', error);
@@ -185,6 +172,28 @@ export function TokenSwap() {
                   <p className="text-xs text-muted-foreground">
                     Limit the number of accounts in the transaction (1-64). 
                     Useful when combining with other instructions.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priorityLevel">Priority Fee</Label>
+                  <Select
+                    value={priorityLevel || ''}
+                    onValueChange={(value) => setPriorityLevel(value as 'low' | 'medium' | 'high' | 'veryHigh' | undefined)}
+                  >
+                    <SelectTrigger id="priorityLevel">
+                      <SelectValue placeholder="Default (none)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Default (none)</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="veryHigh">Very High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Higher priority fees help transactions land faster on-chain.
+                    "Very High" is recommended for times of network congestion.
                   </p>
                 </div>
               </div>
@@ -321,6 +330,12 @@ export function TokenSwap() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Max Accounts</span>
                 <span>{maxAccounts}</span>
+              </div>
+            )}
+            {priorityLevel && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Priority Fee</span>
+                <span className="capitalize">{priorityLevel}</span>
               </div>
             )}
             {isGettingQuote && (
