@@ -15,6 +15,7 @@ export class SwapService {
    * @param slippageBps Slippage tolerance in basis points (100 = 1%)
    * @param maxAccounts Optional parameter to limit the number of accounts in the transaction
    * @param priorityLevel Optional priority level for transaction "low", "medium", "high", "veryHigh"
+   * @param useDynamicSlippage Whether to use dynamic slippage optimization
    * @returns Transaction signature or null if failed
    */
   static async swapTokens(
@@ -25,7 +26,8 @@ export class SwapService {
     amount: number,
     slippageBps: number = 100,
     maxAccounts?: number,
-    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh'
+    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh',
+    useDynamicSlippage: boolean = false
   ): Promise<string | null> {
     try {
       if (!wallet.publicKey || !wallet.signTransaction) {
@@ -43,7 +45,8 @@ export class SwapService {
       const swapTransaction = await this.getJupiterSwapTransaction(
         quoteResponse, 
         wallet.publicKey.toString(),
-        priorityLevel
+        priorityLevel,
+        useDynamicSlippage ? slippageBps : undefined
       );
       if (!swapTransaction) return null;
       
@@ -116,12 +119,14 @@ export class SwapService {
    * @param quoteResponse Quote response from Jupiter API
    * @param userPublicKey User's wallet public key
    * @param priorityLevel Optional priority level for transaction
+   * @param dynamicSlippageBps Optional slippage in basis points for dynamic slippage
    * @returns Transaction object or null if failed
    */
   static async getJupiterSwapTransaction(
     quoteResponse: any,
     userPublicKey: string,
-    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh'
+    priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh',
+    dynamicSlippageBps?: number
   ): Promise<VersionedTransaction | null> {
     try {
       // Jupiter V6 API endpoint for swap transactions
@@ -142,6 +147,14 @@ export class SwapService {
             priorityLevel: priorityLevel
           }
         };
+      }
+      
+      // Add dynamic slippage if specified
+      if (dynamicSlippageBps) {
+        swapRequestBody.dynamicSlippage = {
+          maxBps: dynamicSlippageBps
+        };
+        console.log(`Using dynamic slippage with max ${dynamicSlippageBps} bps`);
       }
       
       console.log('Fetching Jupiter swap transaction', swapRequestBody);

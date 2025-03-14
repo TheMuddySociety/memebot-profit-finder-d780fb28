@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 export function TokenSwap() {
   const { connection } = useConnection();
@@ -35,6 +35,7 @@ export function TokenSwap() {
   const [slippage, setSlippage] = useState<number>(1); // 1%
   const [maxAccounts, setMaxAccounts] = useState<number | undefined>(undefined);
   const [priorityLevel, setPriorityLevel] = useState<'low' | 'medium' | 'high' | 'veryHigh' | undefined>(undefined);
+  const [useDynamicSlippage, setUseDynamicSlippage] = useState<boolean>(false);
   const [quote, setQuote] = useState<any>(null);
   const [isGettingQuote, setIsGettingQuote] = useState(false);
 
@@ -106,7 +107,8 @@ export function TokenSwap() {
         amount,
         slippage * 100, // Convert percentage to basis points
         maxAccounts,
-        priorityLevel
+        priorityLevel,
+        useDynamicSlippage
       );
       
       if (!txSignature) {
@@ -307,6 +309,17 @@ export function TokenSwap() {
               </Button>
             ))}
           </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Switch 
+              id="dynamic-slippage" 
+              checked={useDynamicSlippage}
+              onCheckedChange={setUseDynamicSlippage}
+            />
+            <Label htmlFor="dynamic-slippage" className="text-sm cursor-pointer">
+              Use dynamic slippage optimization
+            </Label>
+            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+          </div>
         </div>
         
         {/* Quote Details */}
@@ -336,6 +349,12 @@ export function TokenSwap() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Priority Fee</span>
                 <span className="capitalize">{priorityLevel}</span>
+              </div>
+            )}
+            {useDynamicSlippage && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Dynamic Slippage</span>
+                <span className="text-green-500">Enabled (max {slippage}%)</span>
               </div>
             )}
             {isGettingQuote && (
