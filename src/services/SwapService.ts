@@ -5,6 +5,7 @@ import {
   JupiterTransactionService,
   TokenService 
 } from './jupiter';
+import { SolanaClient } from '@/utils/solanaClient';
 
 /**
  * Facade service for all swap-related operations
@@ -15,14 +16,17 @@ export class SwapService {
    * Get Jupiter quote for a token swap
    */
   static async getSwapQuote(
-    connection: Connection,
+    connection: Connection | SolanaClient,
     fromToken: string, 
     toToken: string,
     amount: number,
     maxAccounts?: number
   ) {
+    // If a SolanaClient is provided, use its rpc connection
+    const conn = 'rpc' in connection ? connection.rpc : connection;
+    
     return JupiterQuoteService.getSwapQuote(
-      connection,
+      conn,
       fromToken,
       toToken,
       amount,
@@ -34,7 +38,7 @@ export class SwapService {
    * Perform an actual token swap
    */
   static async swapTokens(
-    connection: Connection,
+    connection: Connection | SolanaClient,
     wallet: any,
     fromToken: string,
     toToken: string,
@@ -44,9 +48,11 @@ export class SwapService {
     priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh',
     useDynamicSlippage?: boolean
   ) {
-    // Fix: Change performSwap to swapTokens to match the actual method name in JupiterTransactionService
+    // If a SolanaClient is provided, use its rpc connection
+    const conn = 'rpc' in connection ? connection.rpc : connection;
+    
     return JupiterTransactionService.swapTokens(
-      connection,
+      conn,
       wallet,
       fromToken,
       toToken,

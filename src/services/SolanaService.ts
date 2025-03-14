@@ -1,18 +1,22 @@
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { toast } from 'sonner';
+import { createSolanaClient, SolanaClient } from '@/utils/solanaClient';
 
 export class SolanaService {
-  private static connection: Connection | null = null;
+  private static solanaClient: SolanaClient | null = null;
   
   // Initialize Solana connection
   static initConnection() {
     try {
-      if (!this.connection) {
-        // Use a more reliable RPC endpoint
-        this.connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      if (!this.solanaClient) {
+        // Create a Solana client with connections for both RPC and subscriptions
+        this.solanaClient = createSolanaClient({
+          urlOrMoniker: 'mainnet',  // Change to 'devnet' or 'testnet' for testing
+          commitment: 'confirmed'
+        });
         console.log('Solana connection initialized');
       }
-      return this.connection;
+      return this.solanaClient.rpc;
     } catch (error) {
       console.error('Failed to initialize Solana connection:', error);
       toast.error('Failed to connect to Solana network');
@@ -21,11 +25,19 @@ export class SolanaService {
   }
 
   // Get connection (initialize if needed)
-  static getConnection(): Connection {
-    if (!this.connection) {
-      return this.initConnection() as Connection;
+  static getConnection() {
+    if (!this.solanaClient) {
+      this.initConnection();
     }
-    return this.connection;
+    return this.solanaClient!.rpc;
+  }
+  
+  // Get subscription connection
+  static getSubscriptionConnection() {
+    if (!this.solanaClient) {
+      this.initConnection();
+    }
+    return this.solanaClient!.rpcSubscriptions;
   }
 
   // Get token account balance
