@@ -5,7 +5,7 @@ import { ArrowDownUp, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { toast } from "sonner";
-import { TokenService, JupiterQuoteService } from '@/services/jupiter';
+import { TokenService, JupiterQuoteService, JupiterTransactionService } from '@/services/jupiter';
 import { Button } from "@/components/ui/button";
 import { TokenSelector } from './TokenSelector';
 import { SlippageSelector } from './SlippageSelector';
@@ -84,8 +84,8 @@ export function TokenSwap() {
     setIsSwapping(true);
     
     try {
-      // We'll use the JupiterTransactionService here via SwapService facade
-      const txSignature = await JupiterQuoteService.swapTokens(
+      // Fix: Change JupiterQuoteService.swapTokens to JupiterTransactionService.swapTokens
+      const txSignature = await JupiterTransactionService.swapTokens(
         connection,
         {
           publicKey,

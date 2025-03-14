@@ -44,7 +44,8 @@ export class SwapService {
     priorityLevel?: 'low' | 'medium' | 'high' | 'veryHigh',
     useDynamicSlippage?: boolean
   ) {
-    return JupiterTransactionService.performSwap(
+    // Fix: Change performSwap to swapTokens to match the actual method name in JupiterTransactionService
+    return JupiterTransactionService.swapTokens(
       connection,
       wallet,
       fromToken,
