@@ -70,4 +70,11 @@ export class SwapService {
   static getCommonTokens() {
     return TokenService.getCommonTokens();
   }
+  
+  /**
+   * Get all tokens including new listings from Bullme API
+   */
+  static async getAllTokens() {
+    return TokenService.getAllTokens();
+  }
 }

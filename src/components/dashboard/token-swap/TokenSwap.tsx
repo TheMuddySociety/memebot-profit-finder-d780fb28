@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { ArrowDownUp, Info } from "lucide-react";
@@ -18,6 +17,7 @@ export function TokenSwap() {
   const { publicKey, signTransaction, connected } = useWallet();
   const [isSwapping, setIsSwapping] = useState(false);
   const [tokens, setTokens] = useState<any[]>([]);
+  const [isLoadingTokens, setIsLoadingTokens] = useState(false);
   const [fromToken, setFromToken] = useState<string>('');
   const [toToken, setToToken] = useState<string>('');
   const [amount, setAmount] = useState<number>(1);
@@ -38,7 +38,31 @@ export function TokenSwap() {
       setFromToken(commonTokens[0].mint);
       setToToken(commonTokens[1].mint);
     }
+    
+    // Load tokens from Bullme API
+    loadBullmeTokens();
   }, []);
+
+  const loadBullmeTokens = async () => {
+    setIsLoadingTokens(true);
+    try {
+      const allTokens = await TokenService.getAllTokens();
+      setTokens(allTokens);
+      
+      // Keep selected tokens if they exist in the new list
+      if (!allTokens.find(t => t.mint === fromToken) && allTokens.length > 0) {
+        setFromToken(allTokens[0].mint);
+      }
+      if (!allTokens.find(t => t.mint === toToken) && allTokens.length > 1) {
+        setToToken(allTokens[1].mint);
+      }
+    } catch (error) {
+      console.error('Error loading tokens:', error);
+      toast.error('Failed to load token list');
+    } finally {
+      setIsLoadingTokens(false);
+    }
+  };
 
   // Get new quote when inputs change
   useEffect(() => {
@@ -136,12 +160,22 @@ export function TokenSwap() {
               Swap your tokens at the best rates across multiple DEXs
             </CardDescription>
           </div>
-          <SwapSettings 
-            maxAccounts={maxAccounts}
-            setMaxAccounts={setMaxAccounts}
-            priorityLevel={priorityLevel}
-            setPriorityLevel={setPriorityLevel}
-          />
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={loadBullmeTokens}
+              disabled={isLoadingTokens}
+            >
+              {isLoadingTokens ? 'Loading...' : 'Refresh Tokens'}
+            </Button>
+            <SwapSettings 
+              maxAccounts={maxAccounts}
+              setMaxAccounts={setMaxAccounts}
+              priorityLevel={priorityLevel}
+              setPriorityLevel={setPriorityLevel}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
