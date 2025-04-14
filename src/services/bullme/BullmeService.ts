@@ -47,12 +47,24 @@ interface BullmeApiResponse {
 
 export class BullmeService {
   private static BASE_URL = 'https://api.bullme.one';
+  private static cachedTokens: BullmeToken[] | null = null;
+  private static lastFetchTime: number = 0;
+  private static CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
   /**
    * Fetch new token listings from the Bullme API
    */
   static async getNewTokens(): Promise<BullmeToken[]> {
+    const now = Date.now();
+    
+    // Return cached data if it's fresh
+    if (this.cachedTokens && (now - this.lastFetchTime < this.CACHE_EXPIRY)) {
+      console.log('Using cached Bullme tokens');
+      return this.cachedTokens;
+    }
+    
     try {
+      console.log('Fetching new tokens from Bullme API');
       const response = await fetch(`${this.BASE_URL}/market/token/newTokens`);
       
       if (!response.ok) {
@@ -65,9 +77,20 @@ export class BullmeService {
         throw new Error(`API returned error: ${data.msg}`);
       }
       
+      // Cache the response
+      this.cachedTokens = data.data;
+      this.lastFetchTime = now;
+      
       return data.data;
     } catch (error) {
       console.error('Error fetching new tokens from Bullme API:', error);
+      
+      // Return cached data if available, even if expired
+      if (this.cachedTokens) {
+        console.log('Using expired cached Bullme tokens after fetch error');
+        return this.cachedTokens;
+      }
+      
       throw error;
     }
   }

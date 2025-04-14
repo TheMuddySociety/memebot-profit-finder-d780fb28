@@ -16,34 +16,35 @@ const Index = () => {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">
-          SAVAG3 D3 Tradez Dashboard
-        </h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            <BlockchainAnalytics />
-            <TrendingCoins />
-          </div>
+      <main className="flex-1 container mx-auto px-2 py-4 md:py-6 max-w-screen-2xl">
+        <div className="space-y-4 md:space-y-6">
+          <TrendingCoins />
           
-          <div className="space-y-4 md:space-y-6">
-            <PerformanceMetrics />
-            {isMobile ? null : <TokenSwap />}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <BlockchainAnalytics />
+            </div>
+            
+            <div>
+              <PerformanceMetrics />
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
-          <div className="lg:col-span-1">
-            <ProfitSimulator />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-1">
+              <ProfitSimulator />
+            </div>
+            
+            <div className="lg:col-span-1">
+              {isMobile ? <TokenSwap /> : <MemeScanner />}
+            </div>
+            
+            <div className="lg:col-span-1">
+              {isMobile ? <MemeScanner /> : <TokenSwap />}
+            </div>
           </div>
           
-          <div className="lg:col-span-1">
-            {isMobile ? <TokenSwap /> : null}
-            <MemeScanner />
-          </div>
-          
-          <div className="lg:col-span-1">
+          <div>
             <LaunchCalendar />
           </div>
         </div>

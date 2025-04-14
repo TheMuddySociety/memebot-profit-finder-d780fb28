@@ -1,151 +1,159 @@
 
-import { useState, useEffect } from 'react';
-import { mockMemecoins } from "@/lib/mock-data";
-import { SolanaService } from '@/services/SolanaService';
-import { toast } from 'sonner';
+import { useState, useEffect, useCallback } from 'react';
 import { MemeToken } from '@/types/memeToken';
+import { BullmeService } from '@/services/bullme/BullmeService';
+import { toast } from '@/hooks/use-toast';
 
-export function useMemecoins() {
+// Time units for display
+const getAgeDisplay = (timestamp: number): string => {
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  return `${diffDays}d`;
+};
+
+export const useMemecoins = () => {
   const [memecoins, setMemecoins] = useState<MemeToken[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('change24h');
-  const [sortDirection, setSortDirection] = useState('desc');
+  const [sortField, setSortField] = useState<string>('timestamp');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const enrichWithOnChainData = async (coins: MemeToken[]) => {
-    const enrichedCoins = [...coins];
-    
-    enrichedCoins.forEach((coin, index) => {
-      if (!coin.tokenAddress) {
-        coin.tokenAddress = `So1ana${index}MemeToken${coin.id.slice(0, 8)}111111111111111`;
-      }
-    });
-    
-    for (const coin of enrichedCoins) {
-      if (coin.tokenAddress) {
-        try {
-          const liquidity = await SolanaService.getTokenLiquidity(coin.tokenAddress);
-          if (liquidity !== null) {
-            coin.onChainLiquidity = liquidity;
-          }
-          coin.onChainHolders = Math.floor(Math.random() * 10000) + 100;
-        } catch (error) {
-          console.error(`Error fetching on-chain data for ${coin.symbol}:`, error);
-        }
-      }
-    }
-    
-    return enrichedCoins;
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      
-      SolanaService.initConnection();
-      
-      try {
-        setTimeout(async () => {
-          const enrichedCoins = await enrichWithOnChainData(mockMemecoins);
-          setMemecoins(enrichedCoins);
-          setLoading(false);
-          console.log('Enriched memecoins with on-chain data:', enrichedCoins);
-        }, 1500);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error('Failed to fetch token data');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    
-    const tokenAddresses = mockMemecoins
-      .filter(coin => coin.tokenAddress)
-      .map(coin => coin.tokenAddress as string);
-      
-    const stopMonitoring = SolanaService.startPriceMonitoring(tokenAddresses, (updates) => {
-      console.log('Price updates:', updates);
-    });
-    
-    return () => {
-      stopMonitoring();
-    };
-  }, []);
-
-  const refreshData = async () => {
-    setIsRefreshing(true);
+  const fetchMemecoins = useCallback(async () => {
     try {
-      const enrichedCoins = await enrichWithOnChainData(memecoins);
-      setMemecoins([...enrichedCoins]);
-      toast.success('On-chain data refreshed');
+      setLoading(true);
+      const bullmeTokens = await BullmeService.getNewTokens();
+      
+      // Transform Bullme tokens to our MemeToken format
+      const transformedTokens = bullmeTokens.map((token, index) => ({
+        id: token.address,
+        name: token.name,
+        symbol: token.symbol,
+        price: token.marketCap / token.totalSupply,
+        marketCap: token.marketCap,
+        volume24h: token.tradeVolume24h,
+        change24h: token.buyVolume24h > token.sellVolume24h ? 7.8 : -1.3, // Simplified calculation
+        change1h: token.buyVolume24h > token.sellVolume24h ? 0.7 : -0.5, // Simplified calculation
+        logoUrl: token.logo,
+        tokenAddress: token.address,
+        liquidity: token.liquidity,
+        holders: token.tradeCount,
+        age: getAgeDisplay(token.timestamp),
+        onChainHolders: token.tradeCount,
+        onChainLiquidity: token.liquidity,
+        tags: token.status === "NEW" ? ["New"] : ["Listed"],
+        timestamp: token.timestamp,
+        status: token.status
+      }));
+
+      setMemecoins(transformedTokens);
     } catch (error) {
-      console.error('Error refreshing data:', error);
-      toast.error('Failed to refresh data');
+      console.error('Error fetching memecoins:', error);
+      toast({
+        title: "Failed to fetch tokens",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+      
+      // Fallback to mock data if API fails
+      setMemecoins([
+        {
+          id: "coin1",
+          name: "CATTTT",
+          symbol: "CATTTT",
+          price: 0.001,
+          marketCap: 11600000,
+          volume24h: 2300000,
+          change24h: 7.8,
+          change1h: 0.7,
+          logoUrl: "https://picsum.photos/200",
+          tokenAddress: "So11111111111111111111111111111111111111112",
+          liquidity: 1000000,
+          holders: 2400,
+          age: "50m",
+          onChainHolders: 2400,
+          onChainLiquidity: 1000000,
+          tags: ["New", "Meme"],
+          timestamp: Date.now() - 50 * 60 * 1000,
+          status: "NEW"
+        },
+        {
+          id: "coin2",
+          name: "RMC",
+          symbol: "RMC",
+          price: 0.0001,
+          marketCap: 538500,
+          volume24h: 168400,
+          change24h: 13.7,
+          change1h: 5.1,
+          logoUrl: "https://picsum.photos/201",
+          tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          liquidity: 44400,
+          holders: 1000,
+          age: "4h",
+          onChainHolders: 1000,
+          onChainLiquidity: 44400,
+          tags: ["Listed", "Meme"],
+          timestamp: Date.now() - 4 * 60 * 60 * 1000,
+          status: "LISTED"
+        }
+      ]);
     } finally {
+      setLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
 
-  const sortedMemecoins = [...memecoins].sort((a, b) => {
-    const direction = sortDirection === 'asc' ? 1 : -1;
-    
-    // Get the values to compare
-    const valueA = a[sortBy as keyof MemeToken];
-    const valueB = b[sortBy as keyof MemeToken];
-    
-    // Handle different data types appropriately
-    if (typeof valueA === 'number' && typeof valueB === 'number') {
-      return direction * (valueA - valueB);
-    } else if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return direction * valueA.localeCompare(valueB);
-    } else {
-      // Fallback for other types or mixed types
-      return direction * ((valueA as any) > (valueB as any) ? 1 : -1);
-    }
-  });
+  const refreshData = useCallback(() => {
+    setIsRefreshing(true);
+    fetchMemecoins();
+  }, [fetchMemecoins]);
 
-  const handleSort = (field: string) => {
-    if (field === sortBy) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortDirection('desc');
-    }
-  };
+  const handleSort = useCallback((field: string) => {
+    setSortField(field);
+    setSortDirection(current => 
+      sortField === field ? (current === 'asc' ? 'desc' : 'asc') : 'desc'
+    );
+  }, [sortField]);
 
-  // New method to get AI trading recommendations for a token
-  const getAITradingRecommendation = async (tokenAddress: string) => {
-    if (!tokenAddress) return null;
-    
-    try {
-      // Find the token in our list
-      const token = memecoins.find(coin => coin.tokenAddress === tokenAddress);
-      if (!token) return null;
+  useEffect(() => {
+    fetchMemecoins();
+  }, [fetchMemecoins]);
+
+  useEffect(() => {
+    // Sort memecoins based on sortField and sortDirection
+    setMemecoins(currentMemecoins => {
+      const sortedCoins = [...currentMemecoins].sort((a, b) => {
+        const fieldA = a[sortField as keyof MemeToken];
+        const fieldB = b[sortField as keyof MemeToken];
+        
+        if (fieldA === undefined || fieldB === undefined) return 0;
+        
+        if (typeof fieldA === 'string' && typeof fieldB === 'string') {
+          return sortDirection === 'asc' 
+            ? fieldA.localeCompare(fieldB) 
+            : fieldB.localeCompare(fieldA);
+        }
+        
+        return sortDirection === 'asc'
+          ? Number(fieldA) - Number(fieldB)
+          : Number(fieldB) - Number(fieldA);
+      });
       
-      // Get AI prediction for this token (simplified)
-      return {
-        token,
-        buy: token.change24h > 0,
-        sellTarget: token.price * 1.5,
-        stopLoss: token.price * 0.8,
-        confidence: Math.random() * 0.5 + 0.5, // 0.5 to 1.0
-        rationale: `Based on ${token.symbol}'s market performance and liquidity profile.`
-      };
-    } catch (error) {
-      console.error('Error getting AI trading recommendation:', error);
-      return null;
-    }
-  };
+      return sortedCoins;
+    });
+  }, [sortField, sortDirection]);
 
   return {
-    memecoins: sortedMemecoins,
+    memecoins,
     loading,
-    sortBy,
-    sortDirection,
     isRefreshing,
-    handleSort,
     refreshData,
-    getAITradingRecommendation
+    handleSort
   };
-}
+};

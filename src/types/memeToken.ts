@@ -3,16 +3,19 @@ export interface MemeToken {
   id: string;
   name: string;
   symbol: string;
-  logoUrl: string;
   price: number;
-  change24h: number;
-  volume24h: number;
   marketCap: number;
-  launchDate: string;
-  tags: string[];
+  volume24h: number;
+  change24h: number;
+  change1h?: number;
+  logoUrl: string;
+  tokenAddress?: string;
   liquidity: number;
   holders: number;
-  tokenAddress: string;
-  onChainLiquidity?: number | null;
+  age?: string;
   onChainHolders?: number;
+  onChainLiquidity?: number;
+  tags: string[];
+  timestamp: number;
+  status?: string;
 }
