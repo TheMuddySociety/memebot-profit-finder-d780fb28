@@ -78,41 +78,18 @@ export class NFTService {
       // 2. Create metadata for the collection using MPL Core
       // 3. Sign and send the transaction
 
-      // For demonstration, we'll use MPL Core to create the proper instructions
-      // but still return a mock value
+      // For demonstration, we'll reference MPL Core correctly but still return a mock value
       
       // Create a new mint account (would require a real wallet signature)
       const collectionMint = Keypair.generate();
       
-      // Create a metadata account using MPL Core
-      const metadataAccount = mplCore.findMetadataAddress(collectionMint.publicKey);
+      // Find the metadata address using MPL Core's PDA helpers
+      const metadataAddress = mplCore.accounts.Metadata.getPda(collectionMint.publicKey);
       
-      // Create metadata instruction (simplified example)
-      const createMetadataInstruction = mplCore.createCreateMetadataAccountInstruction({
-        metadata: metadataAccount,
-        mint: collectionMint.publicKey,
-        mintAuthority: walletPublicKey,
-        payer: walletPublicKey,
-        updateAuthority: walletPublicKey,
-        data: {
-          name,
-          symbol,
-          uri: metadataUri,
-          sellerFeeBasisPoints: 500, // 5%
-          creators: [{
-            address: walletPublicKey,
-            verified: true,
-            share: 100
-          }],
-          collection: null,
-          uses: null
-        }
-      });
-      
-      // Log what would happen in a real implementation
+      // Log details about what would happen in a real implementation
       console.log('Collection mint created:', collectionMint.publicKey.toString());
-      console.log('Metadata account:', metadataAccount.toString());
-      console.log('Instruction created using MPL Core');
+      console.log('Metadata PDA address:', metadataAddress.toString());
+      console.log('Would create metadata using MPL Core');
       
       // Mock delay to simulate blockchain interaction
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -150,45 +127,14 @@ export class NFTService {
         // Generate new mint keypair for this NFT
         const nftMint = Keypair.generate();
         
-        // Find the metadata address for this NFT
-        const metadataAddress = mplCore.findMetadataAddress(nftMint.publicKey);
+        // Find the metadata address for this NFT using MPL Core's PDA helpers
+        const metadataAddress = mplCore.accounts.Metadata.getPda(nftMint.publicKey);
         
-        // Create metadata instruction using MPL Core
-        const createMetadataInstruction = mplCore.createCreateMetadataAccountInstruction({
-          metadata: metadataAddress,
-          mint: nftMint.publicKey,
-          mintAuthority: walletPublicKey,
-          payer: walletPublicKey,
-          updateAuthority: walletPublicKey,
-          data: {
-            name: `NFT #${index + 1}`,
-            symbol: "NFT",
-            uri,
-            sellerFeeBasisPoints: 500, // 5%
-            creators: [{
-              address: walletPublicKey,
-              verified: true,
-              share: 100
-            }],
-            collection: {
-              key: collectionMintPublicKey,
-              verified: false // Will be verified in a separate step
-            },
-            uses: null
-          }
-        });
-        
-        // Create verification instruction for collection membership
-        const verifyInstruction = mplCore.createVerifyCollectionInstruction({
-          metadata: metadataAddress,
-          collectionAuthority: walletPublicKey,
-          collectionMint: collectionMintPublicKey,
-          collectionMetadata: mplCore.findMetadataAddress(collectionMintPublicKey),
-        });
-        
-        // Log what would happen in a real implementation
+        // Create metadata and verify instructions
+        // In a real implementation, we would use the actual instruction builders from MPL Core
         console.log(`NFT #${index + 1} mint created:`, nftMint.publicKey.toString());
-        console.log('Instructions created using MPL Core');
+        console.log('Metadata PDA:', metadataAddress.toString());
+        console.log('Would create metadata and verify collection membership using MPL Core');
         
         // Add this mint to our results
         mintResults.push(nftMint.publicKey.toString());
@@ -284,7 +230,7 @@ export class NFTService {
       // 3. Fetch and parse the metadata account data
       
       const mintPublicKey = new PublicKey(mintAddress);
-      const metadataAddress = mplCore.findMetadataAddress(mintPublicKey);
+      const metadataAddress = mplCore.accounts.Metadata.getPda(mintPublicKey);
       
       console.log('Metadata account address:', metadataAddress.toString());
       console.log('Using Metaplex Core to fetch metadata');
