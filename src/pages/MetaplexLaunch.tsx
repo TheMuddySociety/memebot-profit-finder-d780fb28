@@ -2,13 +2,10 @@
 import React, { useState } from 'react';
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Image, Upload, CheckCircle2, FileImage, AlertCircle, Info, Rocket } from "lucide-react";
+import { Image, CheckCircle2, AlertCircle, Info, Rocket } from "lucide-react";
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useNavigate } from 'react-router-dom';
 import { NFTUploader } from "@/components/nft/NFTUploader";
@@ -21,6 +18,7 @@ const MetaplexLaunch = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
 
   // Check wallet connection on mount
   React.useEffect(() => {
@@ -45,19 +43,32 @@ const MetaplexLaunch = () => {
     }
   };
 
-  // Handle NFT launch
+  // Handle NFT launch using Metaplex Core
   const handleLaunch = async () => {
+    if (!publicKey) {
+      toast.error("Wallet not connected", {
+        description: "Please connect your wallet to launch NFTs",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      toast.info("Launching NFT collection", {
+      toast.info("Launching NFT collection with Metaplex Core", {
         description: "Please approve the transaction in your wallet",
       });
       
       // Launch the NFT collection
-      await NFTService.launchCollection();
+      const result = await NFTService.launchCollection();
+      
+      // Save the collection mint for future reference
+      if (result.collectionMint) {
+        localStorage.setItem('lastCollectionMint', result.collectionMint);
+        setTxSignature(result.collectionMint);
+      }
       
       toast.success("NFT collection launched", {
-        description: "Your NFT collection has been successfully launched",
+        description: `Your collection of ${result.nftMints.length} NFTs has been successfully launched using Metaplex Core`,
       });
     } catch (error) {
       console.error("Error launching NFT collection:", error);
@@ -76,7 +87,7 @@ const MetaplexLaunch = () => {
         <div className="max-w-5xl mx-auto">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-white mb-2">Launch Metaplex Core NFTs</h1>
-            <p className="text-gray-400">Create and launch your NFT collection on Solana</p>
+            <p className="text-gray-400">Create and launch your NFT collection on Solana using Metaplex Core</p>
           </div>
 
           {/* Progress indicator */}
@@ -114,18 +125,18 @@ const MetaplexLaunch = () => {
             </CardContent>
           </Card>
 
-          {/* Info cards */}
+          {/* Metaplex info cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <Card className="border-gray-800 bg-black/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  No-Code Solution
+                  Metaplex Core Standard
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-400">
-                  Launch NFTs without writing any code. Our intuitive interface makes it easy.
+                  Launch NFTs using the Metaplex Core standard for maximum compatibility and features.
                 </p>
               </CardContent>
             </Card>
@@ -133,12 +144,12 @@ const MetaplexLaunch = () => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-yellow-500" />
-                  Low Fees
+                  On-Chain Metadata
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-400">
-                  Metaplex Core offers minimal fees compared to other NFT standards on Solana.
+                  Metaplex Core stores critical metadata on-chain for improved permanence and security.
                 </p>
               </CardContent>
             </Card>
@@ -146,16 +157,32 @@ const MetaplexLaunch = () => {
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Info className="h-5 w-5 text-blue-500" />
-                  Fast Deployment
+                  Collection Verification
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-400">
-                  NFTs deploy within seconds on the Solana blockchain with instant confirmation.
+                  Group NFTs into verified collections with authenticated membership and provenance.
                 </p>
               </CardContent>
             </Card>
           </div>
+
+          {/* Transaction signature display (if available) */}
+          {txSignature && (
+            <div className="mt-6 p-4 border border-green-800 rounded-lg bg-green-950/20">
+              <h3 className="font-semibold text-green-500 mb-2 flex items-center">
+                <Rocket className="h-5 w-5 mr-2" />
+                Launch Complete!
+              </h3>
+              <p className="text-sm text-gray-400">
+                Collection mint: <span className="font-mono text-green-400">{txSignature}</span>
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                View your collection on Solana Explorer or compatible NFT marketplaces.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

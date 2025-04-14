@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ChevronLeft, Rocket, Check, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useWallet } from '@solana/wallet-adapter-react';
+import { NFTService } from "@/services/NFTService";
 
 interface NFTLaunchSummaryProps {
   onLaunch: () => Promise<void>;
@@ -48,16 +48,24 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
   // Calculate estimated cost
   useEffect(() => {
     if (assets.length > 0) {
-      // Estimate cost at 0.01 SOL per NFT plus 0.1 SOL base fee
-      const baseFee = 0.1;
-      const perNftFee = 0.01;
-      const total = baseFee + (assets.length * perNftFee);
-      setEstimatedCost(total);
+      // Calculate cost based on Metaplex Core operations
+      // Storage cost + mint cost + collection creation cost
+      const baseFee = 0.1;  // Collection creation and storage
+      const perNftFee = 0.01; // Per-NFT minting fee
+      const storageFee = 0.005 * assets.length; // Arweave storage (estimate)
+      const total = baseFee + (assets.length * perNftFee) + storageFee;
+      setEstimatedCost(Number(total.toFixed(3)));
     }
   }, [assets]);
   
   const handleLaunch = async () => {
-    // Extra validation could be done here
+    if (!publicKey) {
+      toast.error("Wallet not connected", { 
+        description: "Please connect your wallet to launch NFTs" 
+      });
+      return;
+    }
+    
     try {
       await onLaunch();
     } catch (error) {
@@ -76,7 +84,7 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
       <div>
         <h2 className="text-xl font-bold text-white mb-4">Launch Summary</h2>
         <p className="text-gray-400 mb-4">
-          Review your NFT collection details before launching
+          Review your NFT collection details before launching with Metaplex Core
         </p>
       </div>
       
@@ -125,6 +133,12 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
                 </span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-400">Standard</span>
+                <span className="text-white font-medium">
+                  Metaplex Core
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-400">Attributes</span>
                 <span className="text-white font-medium">
                   {metadata?.attributes?.length || 0} traits
@@ -141,12 +155,30 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-white">Estimated Cost</h3>
             <Badge variant="warning" className="bg-yellow-500/20 text-yellow-500">
-              {estimatedCost.toFixed(2)} SOL
+              {estimatedCost.toFixed(3)} SOL
             </Badge>
           </div>
           <p className="text-sm text-gray-400">
-            This includes network fees and storage costs on Solana
+            This includes network fees, storage costs, and Metaplex Core operations
           </p>
+        </CardContent>
+      </Card>
+      
+      {/* Metaplex Core details */}
+      <Card className="border-gray-800 bg-black/30">
+        <CardContent className="p-4">
+          <h3 className="font-semibold text-white mb-2">Metaplex Core Details</h3>
+          <div className="space-y-2 text-sm text-gray-400">
+            <p>
+              Your NFTs will be created using the Metaplex Core standard, which provides:
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>On-chain metadata for improved permanence</li>
+              <li>Collection verification for authenticity</li>
+              <li>Royalty enforcement on compatible marketplaces</li>
+              <li>Upgradable metadata if needed in the future</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
       
@@ -165,6 +197,10 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
           <div className="flex items-center text-green-500">
             <Check className="h-5 w-5 mr-2" />
             <span>Metadata and attributes configured</span>
+          </div>
+          <div className="flex items-center text-green-500">
+            <Check className="h-5 w-5 mr-2" />
+            <span>Metaplex Core integration ready</span>
           </div>
           <div className="flex items-start text-yellow-500">
             <AlertTriangle className="h-5 w-5 mr-2 mt-0.5" />
@@ -188,14 +224,14 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
         
         <Button 
           onClick={handleLaunch} 
-          disabled={isLoading}
+          disabled={isLoading || !publicKey}
           className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600"
         >
           {isLoading ? (
             <>Processing...</>
           ) : (
             <>
-              Launch NFT Collection <Rocket className="ml-2 h-4 w-4" />
+              Launch with Metaplex Core <Rocket className="ml-2 h-4 w-4" />
             </>
           )}
         </Button>
@@ -206,8 +242,9 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
         <div className="flex items-start">
           <ShieldCheck className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
           <p className="text-sm text-gray-400">
-            Your NFTs will be launched on the Solana blockchain and cannot be deleted once minted. 
+            Your NFTs will be launched on the Solana blockchain using Metaplex Core. 
             Metadata will be stored on-chain and via Arweave for permanent decentralized storage.
+            This implementation uses the Metaplex Foundation's mpl-core package.
           </p>
         </div>
       </div>
