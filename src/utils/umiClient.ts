@@ -2,6 +2,7 @@
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
 import { PublicKey } from '@solana/web3.js';
+import { mplCandyMachine } from '@metaplex-foundation/mpl-core-candy-machine';
 
 /**
  * Create a UMI instance for Metaplex operations
@@ -10,7 +11,10 @@ import { PublicKey } from '@solana/web3.js';
  */
 export function createUmiClient(endpoint: string = 'https://api.devnet.solana.com') {
   // Create UMI instance with better browser compatibility
-  return createUmi(endpoint);
+  const umi = createUmi(endpoint);
+  
+  // Add the Candy Machine plugin
+  return umi.use(mplCandyMachine());
 }
 
 /**

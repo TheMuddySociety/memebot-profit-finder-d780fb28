@@ -4,6 +4,7 @@ import { SolanaService } from './SolanaService';
 import { createSolanaClient } from '@/utils/solanaClient';
 import * as mplCore from '@metaplex-foundation/mpl-core';
 import { createUmiClient } from '@/utils/umiClient';
+import { mplCandyMachine } from '@metaplex-foundation/mpl-core-candy-machine';
 
 /**
  * Service for managing NFT operations using Metaplex Core standards
@@ -19,7 +20,7 @@ export class NFTService {
    * Create a Umi instance for Metaplex operations
    */
   private static createUmiInstance() {
-    // Create a UMI instance with default plugins for devnet
+    // Create a UMI instance with Candy Machine plugin for devnet
     return createUmiClient('https://api.devnet.solana.com');
   }
 
@@ -127,10 +128,10 @@ export class NFTService {
       const umi = this.createUmiInstance();
       const collectionMintPublicKey = new PublicKey(collectionMint);
       
-      // In a real implementation, we would use Umi to:
-      // 1. Create mint accounts for each NFT
-      // 2. Create metadata for each NFT linking to the collection
-      // 3. Batch and send transactions
+      // In a real implementation, we would use Umi with Candy Machine to:
+      // 1. Create or use an existing candy machine
+      // 2. Add the NFTs to the candy machine
+      // 3. Mint from the candy machine
       
       const mintResults: string[] = [];
       
