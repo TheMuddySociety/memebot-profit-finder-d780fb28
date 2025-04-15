@@ -1,4 +1,3 @@
-
 import { PublicKey, Connection, Keypair, Transaction } from '@solana/web3.js';
 import { toast } from 'sonner';
 import { SolanaService } from './SolanaService';
@@ -84,10 +83,19 @@ export class NFTService {
       // Create a new mint account (would require a real wallet signature)
       const collectionMint = Keypair.generate();
       
-      // Find the metadata address using MPL Core's PDA helpers
-      // Using the correct API based on the mpl-core package structure
-      const metadataAddress = new PublicKey(
-        mplCore.findMetadataPda(collectionMint.publicKey.toBuffer())
+      // Find the metadata PDA
+      // Using available methods from mpl-core
+      console.log("Available mpl-core methods:", Object.keys(mplCore));
+      
+      // Using a more generic approach to find the metadata PDA
+      const seeds = [
+        Buffer.from('metadata'),
+        new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s').toBuffer(),
+        collectionMint.publicKey.toBuffer()
+      ];
+      const [metadataAddress] = PublicKey.findProgramAddressSync(
+        seeds,
+        new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
       );
       
       // Log details about what would happen in a real implementation
@@ -131,10 +139,15 @@ export class NFTService {
         // Generate new mint keypair for this NFT
         const nftMint = Keypair.generate();
         
-        // Find the metadata address for this NFT using MPL Core's PDA helpers
-        // Using the correct API based on the mpl-core package structure
-        const metadataAddress = new PublicKey(
-          mplCore.findMetadataPda(nftMint.publicKey.toBuffer())
+        // Find the metadata PDA for this NFT using a generic approach
+        const seeds = [
+          Buffer.from('metadata'),
+          new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s').toBuffer(),
+          nftMint.publicKey.toBuffer()
+        ];
+        const [metadataAddress] = PublicKey.findProgramAddressSync(
+          seeds,
+          new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
         );
         
         // Create metadata and verify instructions
@@ -237,9 +250,16 @@ export class NFTService {
       // 3. Fetch and parse the metadata account data
       
       const mintPublicKey = new PublicKey(mintAddress);
-      // Using the correct API based on the mpl-core package structure
-      const metadataAddress = new PublicKey(
-        mplCore.findMetadataPda(mintPublicKey.toBuffer())
+      
+      // Using a generic approach to find the metadata PDA
+      const seeds = [
+        Buffer.from('metadata'),
+        new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s').toBuffer(),
+        mintPublicKey.toBuffer()
+      ];
+      const [metadataAddress] = PublicKey.findProgramAddressSync(
+        seeds,
+        new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
       );
       
       console.log('Metadata account address:', metadataAddress.toString());
