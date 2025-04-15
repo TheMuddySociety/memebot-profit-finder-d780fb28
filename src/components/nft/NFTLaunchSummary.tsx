@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ChevronLeft, Rocket, Check, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useWallet } from '@solana/wallet-adapter-react';
-import { NFTService } from "@/services/NFTService";
+import { NFTService } from "@/services/nft";
+import { NFTAsset, NFTCollection } from '@/types/nft';
 
 interface NFTLaunchSummaryProps {
   onLaunch: () => Promise<void>;
@@ -20,7 +22,7 @@ export const NFTLaunchSummary: React.FC<NFTLaunchSummaryProps> = ({
   isLoading
 }) => {
   const { publicKey } = useWallet();
-  const [assets, setAssets] = useState<any[]>([]);
+  const [assets, setAssets] = useState<NFTAsset[]>([]);
   const [metadata, setMetadata] = useState<any>(null);
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
   

@@ -6,16 +6,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Upload, Image, X, Plus, FileImage } from "lucide-react";
 import { Rocket } from "lucide-react";
+import { NFTAsset } from '@/types/nft';
 
 interface NFTUploaderProps {
   onComplete: () => void;
-}
-
-interface NFTAsset {
-  id: string;
-  file: File;
-  preview: string;
-  name: string;
 }
 
 export const NFTUploader: React.FC<NFTUploaderProps> = ({ onComplete }) => {

@@ -1,6 +1,7 @@
 
 import { toast } from 'sonner';
 import { NFTBaseService } from './NFTBaseService';
+import { NFTUploadResult } from '@/types/nft';
 
 /**
  * Service for managing NFT storage operations

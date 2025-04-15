@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,25 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ChevronLeft, Rocket, Plus, Minus, Tag, Globe, Database } from "lucide-react";
 import { useWallet } from '@solana/wallet-adapter-react';
+import { NFTCollection, NFTAttribute, NFTCreator } from '@/types/nft';
 
 interface NFTMetadataFormProps {
   onComplete: () => void;
   onBack: () => void;
 }
 
-interface CollectionMetadata {
-  name: string;
-  symbol: string;
-  description: string;
-  externalUrl: string;
+interface FormMetadata extends NFTCollection {
   royaltyPercentage: number;
-  creators: Array<{ address: string; share: number }>;
-  sellerFeeBasisPoints: number;
 }
 
 export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, onBack }) => {
   const { publicKey } = useWallet();
-  const [metadata, setMetadata] = useState<CollectionMetadata>({
+  const [metadata, setMetadata] = useState<FormMetadata>({
     name: '',
     symbol: '',
     description: '',
@@ -37,13 +31,12 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
     sellerFeeBasisPoints: 500, // 5%
   });
   
-  const [attributes, setAttributes] = useState<Array<{ trait_type: string; value: string }>>([
+  const [attributes, setAttributes] = useState<NFTAttribute[]>([
     { trait_type: '', value: '' }
   ]);
   
   const [useSameMetadataForAll, setUseSameMetadataForAll] = useState(true);
 
-  // Initialize creators with wallet address
   useEffect(() => {
     if (publicKey) {
       setMetadata(prev => ({
@@ -89,7 +82,6 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate
     if (!metadata.name.trim()) {
       toast.error("Missing name", { description: "Please enter a collection name" });
       return;
@@ -100,12 +92,10 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
       return;
     }
     
-    // Filter out empty attributes
     const filteredAttributes = attributes.filter(attr => 
       attr.trait_type.trim() !== '' && attr.value.trim() !== ''
     );
     
-    // Save to localStorage or service
     localStorage.setItem('nftMetadata', JSON.stringify({
       ...metadata,
       attributes: filteredAttributes,
@@ -125,7 +115,6 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
         </p>
       </div>
       
-      {/* Basic metadata */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -181,7 +170,6 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
         </div>
       </div>
       
-      {/* Royalties */}
       <div className="p-4 bg-gray-900/50 rounded-lg space-y-3">
         <div className="flex items-center justify-between">
           <Label htmlFor="royaltyPercentage" className="text-white flex items-center gap-2">
@@ -232,7 +220,6 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
         </p>
       </div>
       
-      {/* NFT Attributes */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-white flex items-center gap-2">
@@ -290,7 +277,6 @@ export const NFTMetadataForm: React.FC<NFTMetadataFormProps> = ({ onComplete, on
         </div>
       </div>
       
-      {/* Navigation buttons */}
       <div className="flex justify-between pt-4">
         <Button 
           type="button" 

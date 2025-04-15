@@ -1,5 +1,7 @@
+
 import { PublicKey } from '@solana/web3.js';
 import { NFTBaseService } from './NFTBaseService';
+import { NFTDetails } from '@/types/nft';
 
 /**
  * Service for NFT lookup and details operations
@@ -8,7 +10,7 @@ export class NFTLookupService extends NFTBaseService {
   /**
    * Gets NFT details by mint address using Metaplex Core
    */
-  static async getNFTDetails(mintAddress: string): Promise<any> {
+  static async getNFTDetails(mintAddress: string): Promise<NFTDetails | null> {
     try {
       console.log('Fetching NFT details for:', mintAddress);
       const connection = this.getSolanaConnection();
@@ -38,7 +40,6 @@ export class NFTLookupService extends NFTBaseService {
           key: 'collectionKey123',
           verified: true
         },
-        // Other metadata...
       };
     } catch (error) {
       console.error('Error fetching NFT details:', error);

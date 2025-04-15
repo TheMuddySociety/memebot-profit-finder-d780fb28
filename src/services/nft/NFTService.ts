@@ -6,6 +6,7 @@ import { NFTStorageService } from './NFTStorageService';
 import { NFTCollectionService } from './NFTCollectionService';
 import { NFTMintingService } from './NFTMintingService';
 import { NFTLookupService } from './NFTLookupService';
+import { NFTMintResult } from '@/types/nft';
 
 /**
  * Main NFT service that combines functionality from the specialized services
@@ -27,10 +28,7 @@ export class NFTService extends NFTBaseService {
   /**
    * Complete workflow to launch an NFT collection using Metaplex Core
    */
-  static async launchCollection(): Promise<{
-    collectionMint: string;
-    nftMints: string[];
-  }> {
+  static async launchCollection(): Promise<NFTMintResult> {
     try {
       // This is where we'd implement the full launch workflow using the above methods
       

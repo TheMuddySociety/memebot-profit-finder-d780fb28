@@ -2,6 +2,7 @@
 import { PublicKey, Keypair } from '@solana/web3.js';
 import { toast } from 'sonner';
 import { NFTBaseService } from './NFTBaseService';
+import { NFTCollection } from '@/types/nft';
 
 /**
  * Service for managing NFT collection operations

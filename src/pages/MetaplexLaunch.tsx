@@ -11,6 +11,7 @@ import { NFTUploader } from "@/components/nft/NFTUploader";
 import { NFTMetadataForm } from "@/components/nft/NFTMetadataForm";
 import { NFTLaunchSummary } from "@/components/nft/NFTLaunchSummary";
 import { NFTService } from "@/services/nft";
+import { NFTMintResult } from "@/types/nft";
 
 const MetaplexLaunch = () => {
   const { connected, publicKey } = useWallet();
