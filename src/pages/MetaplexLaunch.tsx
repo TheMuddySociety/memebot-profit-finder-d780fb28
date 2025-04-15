@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { NFTUploader } from "@/components/nft/NFTUploader";
 import { NFTMetadataForm } from "@/components/nft/NFTMetadataForm";
 import { NFTLaunchSummary } from "@/components/nft/NFTLaunchSummary";
-import { NFTService } from "@/services/NFTService";
+import { NFTService } from "@/services/nft";
 
 const MetaplexLaunch = () => {
   const { connected, publicKey } = useWallet();
@@ -20,7 +19,6 @@ const MetaplexLaunch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [txSignature, setTxSignature] = useState<string | null>(null);
 
-  // Check wallet connection on mount
   React.useEffect(() => {
     if (!connected) {
       toast.error("Wallet not connected", {
@@ -30,7 +28,6 @@ const MetaplexLaunch = () => {
     }
   }, [connected, navigate]);
 
-  // Handle step navigation
   const nextStep = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
@@ -43,7 +40,6 @@ const MetaplexLaunch = () => {
     }
   };
 
-  // Handle NFT launch using Metaplex Core
   const handleLaunch = async () => {
     if (!publicKey) {
       toast.error("Wallet not connected", {
@@ -58,10 +54,8 @@ const MetaplexLaunch = () => {
         description: "Please approve the transaction in your wallet",
       });
       
-      // Launch the NFT collection
       const result = await NFTService.launchCollection();
       
-      // Save the collection mint for future reference
       if (result.collectionMint) {
         localStorage.setItem('lastCollectionMint', result.collectionMint);
         setTxSignature(result.collectionMint);
@@ -90,7 +84,6 @@ const MetaplexLaunch = () => {
             <p className="text-gray-400">Create and launch your NFT collection on Solana using Metaplex Core</p>
           </div>
 
-          {/* Progress indicator */}
           <div className="mb-8">
             <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
               <div 
@@ -114,7 +107,6 @@ const MetaplexLaunch = () => {
             </div>
           </div>
 
-          {/* Content based on current step */}
           <Card className="border-gray-800 bg-black/50 backdrop-blur-sm shadow-lg">
             <CardContent className="p-6">
               {currentStep === 1 && <NFTUploader onComplete={nextStep} />}
@@ -125,7 +117,6 @@ const MetaplexLaunch = () => {
             </CardContent>
           </Card>
 
-          {/* Metaplex info cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
             <Card className="border-gray-800 bg-black/30">
               <CardHeader className="pb-2">
@@ -168,7 +159,6 @@ const MetaplexLaunch = () => {
             </Card>
           </div>
 
-          {/* Transaction signature display (if available) */}
           {txSignature && (
             <div className="mt-6 p-4 border border-green-800 rounded-lg bg-green-950/20">
               <h3 className="font-semibold text-green-500 mb-2 flex items-center">
