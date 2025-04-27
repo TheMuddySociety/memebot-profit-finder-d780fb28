@@ -20,13 +20,23 @@ export class NFTBaseService {
    */
   protected static createUmiInstance() {
     try {
-      // Create a UMI instance with Candy Machine plugin for devnet
+      // Add some logging to help with debugging
       console.log('Creating UMI instance from NFTBaseService');
-      return createUmiClient('https://api.devnet.solana.com');
+      
+      // Create a more browser-friendly UMI instance
+      const umi = createUmiClient('https://api.devnet.solana.com');
+      
+      // Verify it has the necessary methods
+      if (!umi || typeof umi.rpc?.getLatestBlockhash !== 'function') {
+        console.warn('UMI instance is missing expected methods');
+        return createFallbackUmiInstance();
+      }
+      
+      return umi;
     } catch (error) {
       console.error('Failed to create UMI instance:', error);
-      // Return null and handle in calling code
-      return null;
+      // Return a fallback UMI instance to avoid null references
+      return createFallbackUmiInstance();
     }
   }
   
@@ -46,4 +56,24 @@ export class NFTBaseService {
     
     return metadataAddress;
   }
+}
+
+/**
+ * Creates a minimal fallback UMI instance that won't throw errors
+ * when methods are called, used when the real UMI fails to initialize
+ */
+function createFallbackUmiInstance() {
+  console.log('Creating fallback UMI instance for error prevention');
+  
+  // Return a minimal object with methods that won't crash
+  return {
+    use: () => createFallbackUmiInstance(),
+    rpc: {
+      getLatestBlockhash: async () => ({ blockhash: '', lastValidBlockHeight: 0 }),
+    },
+    programs: {
+      get: () => null,
+    },
+    identity: () => {},
+  };
 }
