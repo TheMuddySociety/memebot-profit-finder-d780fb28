@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart2, RefreshCw, Star, Filter, ArrowUpDown } from "lucide-react";
+import { BarChart2, RefreshCw, Star, Filter, ArrowUpDown, ExternalLink } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { useMemecoins } from '@/hooks/useMemecoins';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -27,6 +26,13 @@ export function TrendingCoins() {
         ? prevFavorites.filter(fav => fav !== id)
         : [...prevFavorites, id]
     );
+  };
+
+  const handleTokenClick = (tokenAddress: string) => {
+    if (tokenAddress) {
+      const solscanUrl = `https://solscan.io/token/${tokenAddress}`;
+      window.open(solscanUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -128,8 +134,15 @@ export function TrendingCoins() {
                 ))
               ) : (
                 memecoins.map((coin) => (
-                  <TableRow key={coin.id} className="hover:bg-muted/20">
-                    <TableCell>
+                  <TableRow 
+                    key={coin.id} 
+                    className={cn(
+                      "hover:bg-muted/20 transition-colors",
+                      coin.tokenAddress ? "cursor-pointer hover:bg-solana/10" : ""
+                    )}
+                    onClick={() => coin.tokenAddress && handleTokenClick(coin.tokenAddress)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <button 
                         onClick={() => toggleFavorite(coin.id)}
                         className="text-yellow-500 hover:text-yellow-300 transition-colors"
@@ -163,9 +176,12 @@ export function TrendingCoins() {
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Verified on-chain</p>
+                                  <p>Verified on-chain - Click to view on Solscan</p>
                                 </TooltipContent>
                               </Tooltip>
+                            )}
+                            {coin.tokenAddress && (
+                              <ExternalLink className="h-3 w-3 text-muted-foreground opacity-60" />
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground">
@@ -210,7 +226,7 @@ export function TrendingCoins() {
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="outline" size="sm" className="h-7 px-2 text-xs text-green-500 hover:text-green-400 hover:bg-green-500/10">
                           Buy
