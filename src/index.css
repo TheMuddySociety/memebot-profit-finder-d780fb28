@@ -5,64 +5,64 @@
 
 @layer base {
   :root {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 0 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 0 0% 25%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 0 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 100%;
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 0 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 0 0% 25%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 0 100% 50%;
   }
 }
@@ -75,69 +75,214 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: radial-gradient(ellipse at top, rgba(255, 65, 54, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(20, 241, 149, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+    background-attachment: fixed;
   }
 
+  /* Enhanced Glass Effects */
   .glass-effect {
-    @apply bg-opacity-10 bg-white dark:bg-opacity-10 dark:bg-black backdrop-blur-lg border border-opacity-20 border-white dark:border-opacity-20 dark:border-gray-700;
+    @apply bg-white/5 dark:bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    box-shadow: 
+      0 8px 32px 0 rgba(31, 38, 135, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
   .glass-card {
-    @apply bg-glass-card bg-opacity-50 backdrop-blur-lg border border-opacity-20 border-white dark:border-opacity-20 dark:border-gray-700 shadow-lg transition-all duration-300 hover:shadow-xl;
+    @apply glass-effect rounded-2xl;
+    position: relative;
+    overflow: hidden;
   }
 
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  }
+
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+  }
+
+  /* Shiny Button Effects */
+  .btn-shiny {
+    @apply relative overflow-hidden;
+    background: linear-gradient(45deg, #ff4136, #ff6b5a, #ff4136);
+    background-size: 200% 200%;
+    animation: shine 3s ease-in-out infinite;
+    box-shadow: 
+      0 4px 15px 0 rgba(255, 65, 54, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-shiny::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff4136, #14f195, #673ab7, #ff4136);
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn-shiny:hover::before {
+    opacity: 1;
+    animation: rotate 2s linear infinite;
+  }
+
+  /* Neon Glow Effects */
+  .neon-glow {
+    text-shadow: 
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 15px currentColor,
+      0 0 20px currentColor;
+  }
+
+  .neon-border {
+    box-shadow: 
+      0 0 10px rgba(255, 65, 54, 0.5),
+      0 0 20px rgba(255, 65, 54, 0.3),
+      0 0 30px rgba(255, 65, 54, 0.1),
+      inset 0 0 10px rgba(255, 65, 54, 0.1);
+  }
+
+  /* Enhanced Cards */
   .memecoin-card {
-    @apply rounded-lg overflow-hidden bg-card border border-border;
+    @apply glass-card hover:scale-[1.02] transition-all duration-300;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
   }
 
-  .animate-in {
-    animation-delay: calc(var(--animation-delay, 0) * 100ms);
-    animation-fill-mode: both;
+  .memecoin-card:hover {
+    box-shadow: 
+      0 20px 40px 0 rgba(31, 38, 135, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 0 50px rgba(255, 65, 54, 0.3);
   }
-  
-  /* Custom classes for the trading UI */
+
+  /* Trading specific styles with gloss */
   .trading-header {
-    @apply bg-card border-b border-border py-2 px-4 flex items-center;
-  }
-  
-  .trading-filters {
-    @apply flex items-center gap-2 text-xs;
-  }
-  
-  .trading-filter-active {
-    @apply bg-blue-500 text-white rounded px-2 py-1;
-  }
-  
-  .trading-filter {
-    @apply bg-secondary hover:bg-blue-500/20 rounded px-2 py-1 transition-colors cursor-pointer;
+    @apply glass-effect border-b border-white/10 py-3 px-6 flex items-center;
+    background: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
   }
   
   .trading-table {
     @apply w-full text-sm;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    overflow: hidden;
   }
   
   .trading-table th {
-    @apply bg-secondary py-2 px-2 text-xs font-medium border-b border-border;
+    @apply py-4 px-4 text-xs font-medium border-b border-white/10;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(10px);
   }
   
   .trading-table td {
-    @apply py-2 px-2 border-b border-border;
+    @apply py-4 px-4 border-b border-white/5;
   }
   
   .trading-row-hover {
-    @apply hover:bg-muted/50 cursor-pointer;
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .trading-row-hover:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Glossy inputs */
+  .input-glossy {
+    @apply glass-effect;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  }
+
+  .input-glossy:focus {
+    box-shadow: 
+      0 0 0 2px rgba(255, 65, 54, 0.5),
+      0 8px 32px 0 rgba(31, 38, 135, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   }
 }
 
+/* Enhanced gradients */
 .bg-memecoin-gradient {
-  background: linear-gradient(135deg, #FF4136 0%, #222222 50%, #FF4136 100%);
+  background: linear-gradient(135deg, #ff4136 0%, #ff6b5a 25%, #673ab7 50%, #14f195 75%, #ff4136 100%);
+  background-size: 300% 300%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Enhanced animations */
+@keyframes shine {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes pulse-glow {
   0%, 100% {
-    filter: drop-shadow(0 0 5px rgba(255, 65, 54, 0.5));
+    box-shadow: 
+      0 0 10px rgba(255, 65, 54, 0.5),
+      0 0 20px rgba(255, 65, 54, 0.3),
+      0 0 30px rgba(255, 65, 54, 0.1);
   }
   50% {
-    filter: drop-shadow(0 0 15px rgba(255, 65, 54, 0.8));
+    box-shadow: 
+      0 0 20px rgba(255, 65, 54, 0.8),
+      0 0 30px rgba(255, 65, 54, 0.6),
+      0 0 40px rgba(255, 65, 54, 0.4);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-1deg);
   }
 }
 
@@ -145,100 +290,65 @@
   animation: pulse-glow 3s infinite ease-in-out;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
 .animate-float {
-  animation: float 3s infinite ease-in-out;
+  animation: float 6s infinite ease-in-out;
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.5s ease-out;
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.5s ease-out;
-}
-
-/* Trading-specific styles */
+/* Enhanced positive/negative indicators */
 .positive-change {
-  @apply text-green-500;
+  @apply text-green-400;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
 }
 
 .negative-change {
-  @apply text-red-500;
+  @apply text-red-400;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
 .neutral-change {
   @apply text-gray-400;
 }
 
+/* Enhanced token tags */
 .token-tag {
-  @apply inline-flex items-center justify-center rounded text-xs font-medium px-1.5 py-0.5;
+  @apply inline-flex items-center justify-center rounded-full text-xs font-medium px-3 py-1;
+  backdrop-filter: blur(10px);
 }
 
 .tag-new {
-  @apply bg-green-500/20 text-green-500;
+  @apply text-green-400;
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
 }
 
 .tag-hot {
-  @apply bg-red-500/20 text-red-500;
+  @apply text-red-400;
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
 
 .tag-listed {
-  @apply bg-blue-500/20 text-blue-500;
+  @apply text-blue-400;
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
 }
 
-/* Table UI adjustments */
-table {
-  border-collapse: separate;
-  border-spacing: 0;
+/* Enhanced scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-th {
-  @apply text-muted-foreground font-medium text-xs;
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
 }
 
-td, th {
-  @apply py-3 px-2;
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(145deg, rgba(255, 65, 54, 0.6) 0%, rgba(255, 65, 54, 0.8) 100%);
+  border-radius: 4px;
 }
 
-thead tr {
-  @apply border-b border-border bg-secondary/50;
-}
-
-tbody tr {
-  @apply border-b border-border/50 transition-colors;
-}
-
-tbody tr:hover {
-  @apply bg-muted/20;
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(145deg, rgba(255, 65, 54, 0.8) 0%, rgba(255, 65, 54, 1) 100%);
 }
