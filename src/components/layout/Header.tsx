@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Shield, LogOut, Image } from "lucide-react";
+import { Moon, Sun, Shield, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
@@ -77,22 +76,12 @@ export function Header() {
         
         <div className="flex items-center space-x-4">
           {connected && (
-            <>
-              <Link 
-                to="/dashboard" 
-                className={`text-gray-400 hover:text-white flex items-center gap-1 ${isActive('/dashboard') ? 'text-white font-bold' : ''}`}
-              >
-                Dashboard
-              </Link>
-              
-              <Link 
-                to="/nft-launch" 
-                className={`text-gray-400 hover:text-white flex items-center gap-1 ${isActive('/nft-launch') ? 'text-white font-bold' : ''}`}
-              >
-                <Image className="h-4 w-4" />
-                NFT Launch
-              </Link>
-            </>
+            <Link 
+              to="/dashboard" 
+              className={`text-gray-400 hover:text-white flex items-center gap-1 ${isActive('/dashboard') ? 'text-white font-bold' : ''}`}
+            >
+              Dashboard
+            </Link>
           )}
           
           {isAdmin && (
