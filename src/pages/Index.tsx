@@ -1,6 +1,7 @@
 
 import { BlockchainAnalytics } from "@/components/dashboard/BlockchainAnalytics";
 import { TrendingCoins } from "@/components/dashboard/TrendingCoins";
+import { TopMemecoins } from "@/components/dashboard/TopMemecoins";
 import { PerformanceMetrics } from "@/components/dashboard/PerformanceMetrics";
 import { ProfitSimulator } from "@/components/dashboard/ProfitSimulator";
 import { MemeScanner } from "@/components/dashboard/MemeScanner";
@@ -18,6 +19,7 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto px-2 py-4 md:py-6 max-w-screen-2xl">
         <div className="space-y-4 md:space-y-6">
+          <TopMemecoins />
           <TrendingCoins />
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
