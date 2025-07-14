@@ -7,6 +7,7 @@ import { ProfitSimulator } from "@/components/dashboard/ProfitSimulator";
 import { MemeScanner } from "@/components/dashboard/MemeScanner";
 import { LaunchCalendar } from "@/components/dashboard/LaunchCalendar";
 import { TokenSwap } from "@/components/dashboard/TokenSwap";
+import { BotAccess } from "@/components/dashboard/BotAccess";
 import { Header } from "@/components/layout/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -19,6 +20,7 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto px-2 py-4 md:py-6 max-w-screen-2xl">
         <div className="space-y-4 md:space-y-6">
+          <BotAccess />
           <TopMemecoins />
           <TrendingCoins />
           
