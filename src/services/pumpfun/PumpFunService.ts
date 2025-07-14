@@ -67,7 +67,8 @@ class PumpFunService {
       holders: Math.floor(token.tradeCount * 10), // Estimate holders from trade count
       tags: [token.source, token.status].filter(Boolean),
       timestamp: token.timestamp,
-      status: token.status
+      status: token.status,
+      bondingCurveProgress: token.bondingCurveProgress
     };
   }
 }

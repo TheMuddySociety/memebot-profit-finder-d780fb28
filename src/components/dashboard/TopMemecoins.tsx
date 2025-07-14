@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { TrendingUp, TrendingDown, ExternalLink, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePumpFunTokens } from "@/hooks/usePumpFunTokens";
@@ -82,7 +83,7 @@ export function TopMemecoins() {
               key={coin.id}
               className={cn(
                 "glass-effect p-3 rounded-lg transition-all duration-300 hover:scale-105",
-                "border border-white/10 hover:border-white/20 min-h-[140px]",
+                "border border-white/10 hover:border-white/20 min-h-[180px]",
                 coin.tokenAddress ? "cursor-pointer hover:bg-white/5" : ""
               )}
               onClick={() => coin.tokenAddress && handleTokenClick(coin.tokenAddress)}
@@ -122,6 +123,33 @@ export function TopMemecoins() {
                   </div>
                   <p className="text-xs text-gray-400 truncate">{formatMarketCap(coin.marketCap)}</p>
                 </div>
+                
+                {/* Bonding Curve Progress */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                    <span>Bonding Curve</span>
+                    <span>{((coin.bondingCurveProgress || 0) * 100).toFixed(1)}%</span>
+                  </div>
+                  
+                  <Progress 
+                    value={(coin.bondingCurveProgress || 0) * 100} 
+                    className="h-1.5 mb-2"
+                  />
+                  
+                  <Badge 
+                    variant={coin.bondingCurveProgress && coin.bondingCurveProgress >= 1 ? "default" : 
+                            coin.bondingCurveProgress && coin.bondingCurveProgress > 0.8 ? "secondary" : "outline"} 
+                    className="text-xs h-5 px-2"
+                  >
+                    {coin.bondingCurveProgress && coin.bondingCurveProgress >= 1 
+                      ? "Graduated" 
+                      : coin.bondingCurveProgress && coin.bondingCurveProgress > 0.8 
+                      ? "Near Graduate" 
+                      : "Bonding"
+                    }
+                  </Badge>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="text-left">
                     <p className="font-bold text-white text-sm">{formatPrice(coin.price)}</p>

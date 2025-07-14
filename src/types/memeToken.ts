@@ -18,4 +18,5 @@ export interface MemeToken {
   tags: string[];
   timestamp: number;
   status?: string;
+  bondingCurveProgress?: number;
 }
