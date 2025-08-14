@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, ExternalLink, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TrendingUp, TrendingDown, Filter, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePumpFunTokens } from "@/hooks/usePumpFunTokens";
+import { useLaunchpadTokens } from "@/hooks/useLaunchpadTokens";
+import { LAUNCHPADS, LaunchpadConfig } from "@/services/launchpads/LaunchpadService";
 
 const formatMarketCap = (value: number): string => {
   if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
@@ -28,15 +29,32 @@ const handleTokenClick = (tokenAddress?: string) => {
   }
 };
 
-const handlePumpFunClick = (tokenAddress?: string) => {
+const handleLaunchpadClick = (tokenAddress?: string, launchpad?: string) => {
   if (tokenAddress) {
-    const pumpFunUrl = `https://pump.fun/${tokenAddress}`;
-    window.open(pumpFunUrl, '_blank', 'noopener,noreferrer');
+    let url = '';
+    switch (launchpad) {
+      case 'pumpfun':
+        url = `https://pump.fun/${tokenAddress}`;
+        break;
+      case 'bullme':
+        url = `https://bullme.one/token/${tokenAddress}`;
+        break;
+      case 'raydium':
+        url = `https://raydium.io/swap/?outputCurrency=${tokenAddress}`;
+        break;
+      case 'jupiter':
+        url = `https://jup.ag/swap/SOL-${tokenAddress}`;
+        break;
+      default:
+        url = `https://solscan.io/token/${tokenAddress}`;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 };
 
 export function TopMemecoins() {
-  const { tokens, loading, error } = usePumpFunTokens(10);
+  const [selectedLaunchpad, setSelectedLaunchpad] = useState('all');
+  const { tokens, loading, error } = useLaunchpadTokens(selectedLaunchpad, 15);
 
   // Categorize tokens based on bonding curve progress
   const categorizeTokens = (tokens: any[]) => {
@@ -186,24 +204,24 @@ export function TopMemecoins() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 glass-effect border-purple-500/30 text-purple-400 hover:bg-purple-500/20 hover:border-purple-400/50 text-xs font-medium"
+                  className="flex-1 retro-button text-xs font-mono"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handlePumpFunClick(coin.tokenAddress);
+                    handleLaunchpadClick(coin.tokenAddress, selectedLaunchpad);
                   }}
                 >
-                  View
+                  VIEW
                 </Button>
                 
                 <Button
                   size="sm"
-                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 text-xs font-medium"
+                  className="flex-1 bg-retro-green text-black hover:bg-retro-green/80 text-xs font-mono font-bold"
                   onClick={(e) => {
                     e.stopPropagation();
                     // Add buy functionality here
                   }}
                 >
-                  +0.01
+                  BUY
                 </Button>
               </div>
             </div>
@@ -218,23 +236,39 @@ export function TopMemecoins() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-            <TrendingUp className="h-6 w-6 text-white" />
+      {/* Header with Launchpad Filter */}
+      <div className="retro-terminal p-3 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded bg-retro-green flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-black" />
+            </div>
+            <div>
+              <h3 className="text-sm font-mono text-primary font-bold">MEMECOIN SCANNER</h3>
+              <p className="text-xs text-muted-foreground font-mono">
+                {LAUNCHPADS.find(l => l.id === selectedLaunchpad)?.displayName || 'All Launchpads'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold text-white">Trading Dashboard</h2>
-            <p className="text-muted-foreground">Live trending tokens from Pump.Fun</p>
+          
+          <div className="flex items-center gap-2">
+            <Filter className="h-3 w-3 text-primary" />
+            <Select value={selectedLaunchpad} onValueChange={setSelectedLaunchpad}>
+              <SelectTrigger className="w-32 h-6 text-xs font-mono border-primary/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LAUNCHPADS.map((launchpad) => (
+                  <SelectItem key={launchpad.id} value={launchpad.id} className="text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span>{launchpad.icon}</span>
+                      <span>{launchpad.displayName}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-            Scan Live
-          </Badge>
         </div>
       </div>
       

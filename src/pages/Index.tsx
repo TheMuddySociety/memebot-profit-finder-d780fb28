@@ -1,13 +1,11 @@
 
-import { BlockchainAnalytics } from "@/components/dashboard/BlockchainAnalytics";
 import { TopMemecoins } from "@/components/dashboard/TopMemecoins";
 import { PerformanceMetrics } from "@/components/dashboard/PerformanceMetrics";
-import { ProfitSimulator } from "@/components/dashboard/ProfitSimulator";
 import { MemeScanner } from "@/components/dashboard/MemeScanner";
-import { LaunchCalendar } from "@/components/dashboard/LaunchCalendar";
 import { TokenSwap } from "@/components/dashboard/TokenSwap";
 import { BotAccess } from "@/components/dashboard/BotAccess";
-import { Header } from "@/components/layout/Header";
+import { MiniChart } from "@/components/dashboard/MiniChart";
+import { LiveSignalFeed } from "@/components/dashboard/LiveSignalFeed";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
@@ -33,17 +31,21 @@ const Index = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* Main Trading Section */}
-          <div className="space-y-2">
+          <div className="lg:col-span-2 space-y-2">
             <TokenSwap />
             <TopMemecoins />
           </div>
           
           {/* Sidebar */}
           <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-2">
+              <MiniChart title="SOL/USD" currentValue={67.4} change={12.3} />
+              <MiniChart title="MEME INDEX" currentValue={234.8} change={-5.2} />
+            </div>
+            <LiveSignalFeed />
             <MemeScanner />
-            <PerformanceMetrics />
             <BotAccess />
           </div>
         </div>
