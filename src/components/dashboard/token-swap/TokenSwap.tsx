@@ -25,27 +25,36 @@ export function TokenSwap() {
     // Load Jupiter Terminal script
     const script = document.createElement('script');
     script.src = 'https://terminal.jup.ag/main-v2.js';
+    script.async = true;
     script.onload = () => {
+      console.log('Jupiter script loaded successfully');
       if (window.Jupiter) {
+        console.log('Initializing Jupiter terminal...');
         window.Jupiter.init({
           displayMode: "integrated",
           integratedTargetId: "target-container",
+          endpoint: "https://quote-api.jup.ag/v6",
           formProps: {
-            fixedAmount: true,
-            fixedMint: "So11111111111111111111111111111111111111112",
-            referralAccount: "F4qYkXAcogrjQHw3ngKWjisMmmRFR4Ea6c9DCCpK5gBr",
-            referralFee: 150,
+            fixedOutputMint: false,
+            swapMode: "ExactIn",
+            initialAmount: "1000000",
+            initialInputMint: "So11111111111111111111111111111111111111112",
+            initialOutputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
           },
           enableWalletPassthrough: true,
-          branding: {
-            name: "D3 SAVAGE SWAP",
-            logoUri: "https://ibb.co/0VFDBzYQ",
+          onSuccess: ({ txid }) => {
+            console.log('Swap successful:', txid);
           },
+          onSwapError: ({ error }) => {
+            console.error('Swap error:', error);
+          }
         });
+      } else {
+        console.error('Jupiter object not available');
       }
     };
-    script.onerror = () => {
-      console.error('Failed to load Jupiter Terminal script');
+    script.onerror = (error) => {
+      console.error('Failed to load Jupiter Terminal script:', error);
     };
     document.head.appendChild(script);
 
