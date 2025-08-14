@@ -63,21 +63,11 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				solana: {
-					DEFAULT: '#14F195',
-					dark: '#0ca36c',
-					light: '#4ffab5'
-				},
-				memecoin: {
-					red: '#FF4136',
-					purple: '#673AB7',
-					dark: '#0a0a0a',
-					accent: '#FF7F50'
-				},
-				glass: {
-					light: 'rgba(255, 255, 255, 0.1)',
-					medium: 'rgba(255, 255, 255, 0.15)',
-					dark: 'rgba(0, 0, 0, 0.1)'
+				retro: {
+					black: "0 0% 8%",
+					red: "0 84% 60%",
+					white: "0 0% 95%",
+					green: "120 100% 50%"
 				}
 			},
 			borderRadius: {

@@ -3,10 +3,10 @@ import { RefreshCw } from "lucide-react";
 
 interface QuoteDetailsProps {
   quote: {
-    inAmount: number;
-    outAmount: number;
-    priceImpact: number;
-    routeInfo: string;
+    inAmount: string;
+    outAmount: string;
+    priceImpactPct?: string;
+    routePlan?: Array<any>;
   } | null;
   fromTokenDetails: any;
   toTokenDetails: any;
@@ -31,21 +31,26 @@ export function QuoteDetails({
 }: QuoteDetailsProps) {
   if (!quote) return null;
 
+  const priceImpact = quote.priceImpactPct ? parseFloat(quote.priceImpactPct) : 0;
+  const routeInfo = quote.routePlan ? 
+    quote.routePlan.map((route: any) => route.swapInfo?.label || 'Unknown').join(' → ') : 
+    'Direct';
+
   return (
-    <div className="space-y-2 p-3 bg-background/30 rounded-md">
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Rate</span>
-        <span>1 {fromTokenDetails?.symbol} ≈ {(quote.outAmount / amount).toFixed(6)} {toTokenDetails?.symbol}</span>
+    <div className="retro-card p-2 text-xs font-mono">
+      <div className="flex justify-between">
+        <span className="text-muted-foreground">RATE:</span>
+        <span>{(parseFloat(quote.outAmount) / amount).toFixed(6)} {toTokenDetails?.symbol}/{fromTokenDetails?.symbol}</span>
       </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Price Impact</span>
-        <span className={quote.priceImpact > 1 ? "text-yellow-500" : "text-green-500"}>
-          {quote.priceImpact.toFixed(2)}%
+      <div className="flex justify-between">
+        <span className="text-muted-foreground">IMPACT:</span>
+        <span className={priceImpact > 1 ? "text-primary" : "text-retro-green"}>
+          {priceImpact.toFixed(3)}%
         </span>
       </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Route</span>
-        <span>{quote.routeInfo}</span>
+      <div className="flex justify-between">
+        <span className="text-muted-foreground">ROUTE:</span>
+        <span className="truncate max-w-24">{routeInfo}</span>
       </div>
       {maxAccounts && (
         <div className="flex justify-between text-sm">
