@@ -59,14 +59,14 @@ export function SwapSettings({
           <div className="space-y-2">
             <Label htmlFor="priorityLevel">Priority Fee</Label>
             <Select
-              value={priorityLevel || ''}
-              onValueChange={(value) => setPriorityLevel(value as 'low' | 'medium' | 'high' | 'veryHigh' | undefined)}
+              value={priorityLevel || 'default'}
+              onValueChange={(value) => setPriorityLevel(value === 'default' ? undefined : value as 'low' | 'medium' | 'high' | 'veryHigh')}
             >
               <SelectTrigger id="priorityLevel">
                 <SelectValue placeholder="Default (none)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Default (none)</SelectItem>
+                <SelectItem value="default">Default (none)</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
