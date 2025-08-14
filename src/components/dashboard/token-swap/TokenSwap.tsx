@@ -33,7 +33,7 @@ export function TokenSwap() {
         window.Jupiter.init({
           displayMode: "integrated",
           integratedTargetId: "target-container",
-          endpoint: "https://quote-api.jup.ag/v6",
+          endpoint: "https://api.mainnet-beta.solana.com",
           formProps: {
             fixedOutputMint: false,
             swapMode: "ExactIn",
