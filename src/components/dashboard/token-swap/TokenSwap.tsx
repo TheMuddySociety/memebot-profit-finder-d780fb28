@@ -44,11 +44,17 @@ export function TokenSwap() {
         });
       }
     };
+    script.onerror = () => {
+      console.error('Failed to load Jupiter Terminal script');
+    };
     document.head.appendChild(script);
 
     return () => {
       // Cleanup script
-      document.head.removeChild(script);
+      const existingScript = document.querySelector('script[src="https://terminal.jup.ag/main-v2.js"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
     };
   }, []);
 
