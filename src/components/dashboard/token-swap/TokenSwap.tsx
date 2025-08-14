@@ -19,7 +19,7 @@ export function TokenSwap() {
   useEffect(() => {
     if (!window.Jupiter?.syncProps) return;
     window.Jupiter.syncProps({ passthroughWalletContextState });
-  }, [passthroughWalletContextState.connected]);
+  }, [passthroughWalletContextState.connected, passthroughWalletContextState.publicKey]);
 
   useEffect(() => {
     // Load Jupiter Terminal script
