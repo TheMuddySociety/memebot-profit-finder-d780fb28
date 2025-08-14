@@ -29,17 +29,17 @@ export function TokenSwap() {
       if (window.Jupiter) {
         window.Jupiter.init({
           displayMode: "integrated",
-          integratedTargetId: "jupiter-terminal",
+          integratedTargetId: "target-container",
           formProps: {
             fixedAmount: true,
-            swapMode: "ExactInOrOut",
-            fixedMint: "So11111111111111111111111111111111111111112", // SOL
+            fixedMint: "So11111111111111111111111111111111111111112",
             referralAccount: "F4qYkXAcogrjQHw3ngKWjisMmmRFR4Ea6c9DCCpK5gBr",
-            referralFee: 100, // 1%
+            referralFee: 150,
           },
           enableWalletPassthrough: true,
           branding: {
-            name: "MUDDY Swap",
+            name: "D3 SAVAGE SWAP",
+            logoUri: "https://ibb.co/0VFDBzYQ",
           },
         });
       }
@@ -57,7 +57,7 @@ export function TokenSwap() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <ArrowDownUp className="h-5 w-5 text-solana" />
-          MUDDY Swap
+          D3 SAVAGE SWAP
         </CardTitle>
         <CardDescription>
           Swap your tokens at the best rates across multiple DEXs
@@ -65,7 +65,7 @@ export function TokenSwap() {
       </CardHeader>
       <CardContent>
         <div 
-          id="jupiter-terminal"
+          id="target-container"
           className="min-h-[400px] w-full"
         />
       </CardContent>
