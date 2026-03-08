@@ -326,7 +326,7 @@ export function TokenDetailModal({ token, open, onOpenChange, onSetAlert }: Toke
                 </button>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-right flex flex-col items-end gap-1">
               <div className="text-xl font-bold font-mono text-foreground">{fmt(token.price)}</div>
               <div className={cn(
                 "text-sm font-medium flex items-center justify-end gap-1",
@@ -335,6 +335,16 @@ export function TokenDetailModal({ token, open, onOpenChange, onSetAlert }: Toke
                 {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
                 {fmt(token.change24h, 'pct')}
               </div>
+              {onSetAlert && token.tokenAddress && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1 border-accent/30 hover:bg-accent/10 hover:text-accent mt-0.5"
+                  onClick={() => onSetAlert(token)}
+                >
+                  <Bell className="h-3 w-3" /> Set Alert
+                </Button>
+              )}
             </div>
           </div>
         </DialogHeader>
