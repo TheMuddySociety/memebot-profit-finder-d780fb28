@@ -56,6 +56,144 @@ export type Database = {
         }
         Relationships: []
       }
+      sim_bot_configs: {
+        Row: {
+          bot_type: string
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          bot_type: string
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          bot_type?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      sim_holdings: {
+        Row: {
+          amount: number
+          avg_buy_price: number
+          created_at: string
+          id: string
+          token_address: string
+          token_symbol: string | null
+          total_invested: number
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          amount?: number
+          avg_buy_price?: number
+          created_at?: string
+          id?: string
+          token_address: string
+          token_symbol?: string | null
+          total_invested?: number
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          amount?: number
+          avg_buy_price?: number
+          created_at?: string
+          id?: string
+          token_address?: string
+          token_symbol?: string | null
+          total_invested?: number
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      sim_orders: {
+        Row: {
+          bot_type: string
+          created_at: string
+          current_price: number | null
+          id: string
+          pnl_percent: number | null
+          price_at_execution: number
+          side: string
+          sol_amount: number
+          status: string
+          token_address: string
+          token_amount: number
+          token_symbol: string | null
+          wallet_address: string
+        }
+        Insert: {
+          bot_type: string
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          pnl_percent?: number | null
+          price_at_execution: number
+          side: string
+          sol_amount: number
+          status?: string
+          token_address: string
+          token_amount: number
+          token_symbol?: string | null
+          wallet_address: string
+        }
+        Update: {
+          bot_type?: string
+          created_at?: string
+          current_price?: number | null
+          id?: string
+          pnl_percent?: number | null
+          price_at_execution?: number
+          side?: string
+          sol_amount?: number
+          status?: string
+          token_address?: string
+          token_amount?: number
+          token_symbol?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      sim_wallets: {
+        Row: {
+          created_at: string
+          id: string
+          sol_balance: number
+          updated_at: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sol_balance?: number
+          updated_at?: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sol_balance?: number
+          updated_at?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
