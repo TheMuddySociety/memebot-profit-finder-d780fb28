@@ -62,7 +62,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
   fake_volume: "Fake Volume",
 };
 
-export function NFTCollectionTracker() {
+export function NFTCollectionTracker({ crossRefWallets = [] }: { crossRefWallets?: string[] }) {
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");

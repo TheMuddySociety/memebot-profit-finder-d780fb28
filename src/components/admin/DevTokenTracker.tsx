@@ -55,7 +55,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
   identical_decimals_supply: "Identical Config",
 };
 
-export function DevTokenTracker() {
+export function DevTokenTracker({ crossRefWallets = [] }: { crossRefWallets?: string[] }) {
   const [devAddress, setDevAddress] = useState("");
   const [devAlias, setDevAlias] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -253,7 +253,12 @@ export function DevTokenTracker() {
                         onClick={() => setExpandedDev(isExpanded ? null : dev.walletAddress)}
                       >
                         <td className="p-3">
-                          <div className="font-medium text-foreground">{dev.alias}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-foreground">{dev.alias}</span>
+                            {crossRefWallets.includes(dev.walletAddress) && (
+                              <Badge className="bg-purple-900/30 text-purple-400 border-purple-800 text-[9px]">X-REF NFT</Badge>
+                            )}
+                          </div>
                           <div className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">{dev.walletAddress}</div>
                           {dev.transactionCount !== undefined && (
                             <div className="text-[10px] text-muted-foreground mt-0.5">{dev.transactionCount} txns · {dev.avgLifespan} avg</div>
