@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Bot, Clock, Crosshair, BarChart3, Brain, Wallet, RotateCcw, History, Zap } from "lucide-react";
+import { Bot, Clock, Crosshair, BarChart3, Brain, Wallet, RotateCcw, History, Zap, OctagonX } from "lucide-react";
 import { DCABot } from "./bot-tools/DCABot";
 import { BuySniper } from "./bot-tools/BuySniper";
 import { VolumeBot } from "./bot-tools/VolumeBot";
@@ -14,17 +14,25 @@ import { TradeHistory } from "./bot-tools/TradeHistory";
 import { useSimTrading } from "@/hooks/useSimTrading";
 import { useTradingMode } from "@/hooks/useTradingMode";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const BotAccess = () => {
   const { publicKey } = useWallet();
   const walletAddress = publicKey?.toBase58() || null;
   const sim = useSimTrading(walletAddress);
   const { isLive, hasPaid, isPaymentPending, isCheckingPayment, toggleMode, payAccessFee } = useTradingMode();
+  const { toast } = useToast();
   const [showHistory, setShowHistory] = useState(false);
+  const [killSignal, setKillSignal] = useState(0);
 
   const handleLiveToggle = () => {
     toggleMode();
   };
+
+  const handleKillAll = useCallback(() => {
+    setKillSignal(prev => prev + 1);
+    toast({ title: "🛑 All Bots Stopped", description: "Kill switch activated — all bots disarmed and stopped" });
+  }, [toast]);
 
   return (
     <Card className="w-full">
