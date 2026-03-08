@@ -397,7 +397,73 @@ async function fetchLivePrices(addresses: string[], apiKey: string) {
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Birdeye price fetch failed: ${text}`);
-  }
+}
+
+// ── Leaderboard: aggregate P&L per wallet ──
+async function getLeaderboard(supabase: any, limit: number) {
+  // Get all wallets
+  const { data: wallets } = await supabase
+    .from('sim_wallets')
+    .select('wallet_address, sol_balance, created_at');
+
+  if (!wallets || wallets.length === 0) return [];
+
+  // Get all orders per wallet to compute stats
+  const { data: allOrders } = await supabase
+    .from('sim_orders')
+    .select('wallet_address, side, sol_amount, pnl_percent, bot_type, created_at')
+    .order('created_at', { ascending: false });
+
+  const ordersByWallet = new Map<string, any[]>();
+  (allOrders || []).forEach((o: any) => {
+    const list = ordersByWallet.get(o.wallet_address) || [];
+    list.push(o);
+    ordersByWallet.set(o.wallet_address, list);
+  });
+
+  const leaderboard = wallets.map((w: any) => {
+    const orders = ordersByWallet.get(w.wallet_address) || [];
+    const totalTrades = orders.length;
+    const sells = orders.filter((o: any) => o.side === 'sell');
+    const buys = orders.filter((o: any) => o.side === 'buy');
+
+    const totalSolSpent = buys.reduce((sum: number, o: any) => sum + (o.sol_amount || 0), 0);
+    const totalSolReceived = sells.reduce((sum: number, o: any) => sum + (o.sol_amount || 0), 0);
+
+    // Net P&L = current balance + sol received from sells - initial 10 SOL
+    const netPnlSol = (w.sol_balance || 0) + totalSolReceived - 10 - totalSolSpent + totalSolSpent; 
+    // Simplified: current balance - 10 (starting balance)
+    const simplePnl = (w.sol_balance || 0) - 10;
+
+    const avgPnlPercent = sells.length > 0
+      ? sells.reduce((sum: number, o: any) => sum + (o.pnl_percent || 0), 0) / sells.length
+      : 0;
+
+    const winningTrades = sells.filter((o: any) => (o.pnl_percent || 0) > 0).length;
+    const winRate = sells.length > 0 ? (winningTrades / sells.length) * 100 : 0;
+
+    // Get unique bot types used
+    const botTypes = [...new Set(orders.map((o: any) => o.bot_type))];
+
+    return {
+      wallet_address: w.wallet_address,
+      display_address: `${w.wallet_address.slice(0, 4)}...${w.wallet_address.slice(-4)}`,
+      sol_balance: w.sol_balance,
+      pnl_sol: simplePnl,
+      pnl_percent: 10 > 0 ? (simplePnl / 10) * 100 : 0,
+      avg_trade_pnl: avgPnlPercent,
+      total_trades: totalTrades,
+      win_rate: winRate,
+      bot_types: botTypes,
+      joined: w.created_at,
+    };
+  });
+
+  // Sort by P&L descending
+  leaderboard.sort((a: any, b: any) => b.pnl_sol - a.pnl_sol);
+
+  return leaderboard.slice(0, limit);
+}
   const result = await response.json();
   return result.data || {};
 }
