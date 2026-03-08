@@ -236,9 +236,12 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
   const { priceData, holders, trades, loading, dataSource } = useTokenDetail(token, open);
 
   const [showSwap, setShowSwap] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const swapContainerId = `modal-swap-${token?.id || 'none'}`;
 
-  // Initialize Jupiter swap when panel opens
+  const QUICK_BUY_AMOUNTS = [0.1, 0.5, 1, 5];
+
+  // Initialize Jupiter swap when panel opens or amount changes
   useEffect(() => {
     if (!showSwap || !token?.tokenAddress) return;
 
@@ -251,6 +254,7 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
             fixedMint: undefined,
             initialInputMint: "So11111111111111111111111111111111111111112",
             initialOutputMint: token.tokenAddress,
+            initialAmount: selectedAmount ? String(selectedAmount * 1e9) : undefined,
             referralAccount: "F4qYkXAcogrjQHw3ngKWjisMmmRFR4Ea6c9DCCpK5gBr",
             referralFee: 150,
           },
@@ -263,7 +267,12 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [showSwap, token?.tokenAddress, swapContainerId]);
+  }, [showSwap, token?.tokenAddress, swapContainerId, selectedAmount]);
+
+  const handleQuickBuy = (amount: number) => {
+    setSelectedAmount(amount);
+    if (!showSwap) setShowSwap(true);
+  };
 
   if (!token) return null;
 
