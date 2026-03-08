@@ -31,15 +31,6 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Token Management State
-  const [tokenAddress, setTokenAddress] = useState("");
-  const [tokenSymbol, setTokenSymbol] = useState("");
-  const [tokens, setTokens] = useState<{address: string, symbol: string}[]>([]);
-  
-  // NFT Collection Management State
-  const [collectionAddress, setCollectionAddress] = useState("");
-  const [collectionName, setCollectionName] = useState("");
-  const [collections, setCollections] = useState<{address: string, name: string}[]>([]);
 
   // Payments State
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
