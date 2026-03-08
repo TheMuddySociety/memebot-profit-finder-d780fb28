@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import {
 import {
   ExternalLink, TrendingUp, TrendingDown, Users, Droplets,
   BarChart3, Clock, Copy, ArrowUpRight, ArrowDownRight, Loader2,
+  ArrowRightLeft, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { MemeToken } from '@/types/memeToken';
 import { cn } from '@/lib/utils';
@@ -234,6 +235,36 @@ const fmt = (v: number, type: 'usd' | 'compact' | 'pct' = 'usd') => {
 export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModalProps) {
   const { priceData, holders, trades, loading, dataSource } = useTokenDetail(token, open);
 
+  const [showSwap, setShowSwap] = useState(false);
+  const swapContainerId = `modal-swap-${token?.id || 'none'}`;
+
+  // Initialize Jupiter swap when panel opens
+  useEffect(() => {
+    if (!showSwap || !token?.tokenAddress) return;
+
+    const timer = setTimeout(() => {
+      import("@jup-ag/plugin").then((mod) => {
+        mod.init({
+          displayMode: "integrated",
+          integratedTargetId: swapContainerId,
+          formProps: {
+            fixedMint: undefined,
+            initialInputMint: "So11111111111111111111111111111111111111112",
+            initialOutputMint: token.tokenAddress,
+            referralAccount: "F4qYkXAcogrjQHw3ngKWjisMmmRFR4Ea6c9DCCpK5gBr",
+            referralFee: 150,
+          },
+          branding: {
+            name: "D3 SAVAGE SWAP",
+            logoUri: "https://ibb.co/0VFDBzYQ",
+          },
+        });
+      }).catch(console.error);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [showSwap, token?.tokenAddress, swapContainerId]);
+
   if (!token) return null;
 
   const isPositive = token.change24h >= 0;
@@ -432,6 +463,30 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
               </div>
             </div>
           </div>
+
+          {/* Swap Panel */}
+          {token.tokenAddress && (
+            <div className="rounded-lg border border-border/50 bg-muted/20 overflow-hidden">
+              <button
+                onClick={() => setShowSwap(!showSwap)}
+                className="w-full flex items-center justify-between p-3 hover:bg-muted/40 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <ArrowRightLeft className="h-4 w-4 text-primary" />
+                  Swap SOL → {token.symbol}
+                </div>
+                {showSwap ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+              </button>
+              {showSwap && (
+                <div className="border-t border-border/30">
+                  <div
+                    id={swapContainerId}
+                    className="min-h-[380px] w-full p-3"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2">
