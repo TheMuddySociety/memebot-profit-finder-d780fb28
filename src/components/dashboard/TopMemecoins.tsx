@@ -6,15 +6,9 @@ import { MemeToken } from '@/types/memeToken';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { tokenWebSocketService } from '@/services/websocket/TokenWebSocketService';
+import { TokenDetailModal } from './TokenDetailModal';
 
 type DataSource = 'birdeye' | 'launchpad';
-
-const handleTokenClick = (token: MemeToken) => {
-  if (token.tokenAddress) {
-    const url = `https://pump.fun/${token.tokenAddress}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
-};
 
 export function TopMemecoins() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('movers');
@@ -25,6 +19,13 @@ export function TopMemecoins() {
   const [birdeyeTokens, setBirdeyeTokens] = useState<MemeToken[]>([]);
   const [birdeyeLoading, setBirdeyeLoading] = useState(false);
   const [birdeyeError, setBirdeyeError] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState<MemeToken | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleTokenClick = (token: MemeToken) => {
+    setSelectedToken(token);
+    setModalOpen(true);
+  };
   
   const { tokens: launchpadTokens, loading: launchpadLoading, error: launchpadError, isConnected, lastUpdate } = useRealtimeTokens('pumpfun', 20);
 
@@ -198,6 +199,11 @@ export function TopMemecoins() {
           onSort={handleSort}
         />
       </div>
+      <TokenDetailModal
+        token={selectedToken}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }
