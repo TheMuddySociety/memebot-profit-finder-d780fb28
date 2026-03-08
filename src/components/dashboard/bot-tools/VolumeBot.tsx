@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,41 +8,92 @@ import { Switch } from "@/components/ui/switch";
 import { BarChart3, Play, Pause, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export const VolumeBot = () => {
+interface Props {
+  sim: any;
+}
+
+export const VolumeBot = ({ sim }: Props) => {
   const { toast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
   const [tokenAddress, setTokenAddress] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
   const [solPerTx, setSolPerTx] = useState("0.05");
   const [txPerMinute, setTxPerMinute] = useState([3]);
   const [numWallets, setNumWallets] = useState([3]);
   const [useBundling, setUseBundling] = useState(true);
+  const [txCount, setTxCount] = useState(0);
+  const volumeInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const handleToggle = () => {
+  useEffect(() => {
+    return () => {
+      if (volumeInterval.current) clearInterval(volumeInterval.current);
+    };
+  }, []);
+
+  const startVolumeBot = () => {
     if (!tokenAddress) {
       toast({ title: "Missing token", description: "Enter a token address", variant: "destructive" });
       return;
     }
-    setIsRunning(!isRunning);
-    toast({
-      title: isRunning ? "Volume Bot Stopped" : "Volume Bot Started 📊",
-      description: isRunning
-        ? "Volume generation stopped"
-        : `Generating volume with ${numWallets[0]} wallets at ${txPerMinute[0]} tx/min`,
-    });
+
+    setIsRunning(true);
+    setTxCount(0);
+    let count = 0;
+
+    const intervalMs = (60000 / txPerMinute[0]);
+
+    const executeVolumeTx = async () => {
+      // Alternate buy and sell to generate volume
+      const isBuy = count % 2 === 0;
+      if (isBuy) {
+        await sim.simulateBuy(
+          tokenAddress,
+          tokenSymbol || tokenAddress.slice(0, 6),
+          parseFloat(solPerTx),
+          'volume'
+        );
+      } else {
+        await sim.simulateSell(
+          tokenAddress,
+          tokenSymbol || tokenAddress.slice(0, 6),
+          50, // Sell 50% each time
+          'volume'
+        );
+      }
+      count++;
+      setTxCount(count);
+    };
+
+    executeVolumeTx();
+    volumeInterval.current = setInterval(executeVolumeTx, intervalMs);
   };
 
-  const estVolPerHour = parseFloat(solPerTx) * txPerMinute[0] * 60 * 2; // buy + sell
+  const stopVolumeBot = () => {
+    setIsRunning(false);
+    if (volumeInterval.current) {
+      clearInterval(volumeInterval.current);
+      volumeInterval.current = null;
+    }
+    toast({ title: "Volume Bot Stopped", description: `Executed ${txCount} transactions` });
+  };
+
+  const handleToggle = () => {
+    if (isRunning) stopVolumeBot();
+    else startVolumeBot();
+  };
+
+  const estVolPerHour = parseFloat(solPerTx) * txPerMinute[0] * 60 * 2;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-[hsl(var(--fun-green))]" />
+          <BarChart3 className="h-4 w-4 text-accent" />
           <span className="text-sm font-medium text-foreground">Volume Bot</span>
         </div>
         {isRunning && (
-          <Badge className="bg-[hsl(var(--fun-green))]/20 text-[hsl(var(--fun-green))] border-[hsl(var(--fun-green))]/30 animate-pulse">
-            Active
+          <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
+            {txCount} txs
           </Badge>
         )}
       </div>
@@ -55,6 +106,17 @@ export const VolumeBot = () => {
             value={tokenAddress}
             onChange={(e) => setTokenAddress(e.target.value)}
             className="bg-muted/30 border-border text-sm font-mono"
+            disabled={isRunning}
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground">Token Symbol (optional)</Label>
+          <Input
+            placeholder="e.g. BONK"
+            value={tokenSymbol}
+            onChange={(e) => setTokenSymbol(e.target.value)}
+            className="bg-muted/30 border-border text-sm"
             disabled={isRunning}
           />
         </div>
@@ -89,7 +151,7 @@ export const VolumeBot = () => {
 
         <div>
           <div className="flex justify-between mb-1">
-            <Label className="text-xs text-muted-foreground">Number of Wallets</Label>
+            <Label className="text-xs text-muted-foreground">Simulated Wallets</Label>
             <span className="text-xs font-mono text-foreground">{numWallets[0]}</span>
           </div>
           <Slider
@@ -116,20 +178,23 @@ export const VolumeBot = () => {
             <span className="text-foreground font-mono">{estVolPerHour.toFixed(2)} SOL</span>
           </div>
           <div className="flex justify-between text-xs mt-1">
-            <span className="text-muted-foreground">Wallets active</span>
-            <span className="text-foreground font-mono">{numWallets[0]}</span>
+            <span className="text-muted-foreground">Transactions done</span>
+            <span className="text-foreground font-mono">{txCount}</span>
           </div>
         </div>
 
         <Button
           onClick={handleToggle}
+          disabled={sim.isLoading}
           className={`w-full ${isRunning ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' : 'bg-accent hover:bg-accent/90 text-accent-foreground'}`}
           size="sm"
         >
-          {isRunning ? (
+          {sim.isLoading ? (
+            <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2" /> Processing...</>
+          ) : isRunning ? (
             <><Pause className="h-4 w-4 mr-2" /> Stop Volume Bot</>
           ) : (
-            <><Play className="h-4 w-4 mr-2" /> Start Volume Bot</>
+            <><Play className="h-4 w-4 mr-2" /> Start Volume Bot (Paper)</>
           )}
         </Button>
       </div>

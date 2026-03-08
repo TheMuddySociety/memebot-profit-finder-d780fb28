@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,28 +7,69 @@ import { Switch } from "@/components/ui/switch";
 import { Crosshair, Zap, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export const BuySniper = () => {
+interface Props {
+  sim: any;
+}
+
+export const BuySniper = ({ sim }: Props) => {
   const { toast } = useToast();
   const [isArmed, setIsArmed] = useState(false);
   const [tokenAddress, setTokenAddress] = useState("");
+  const [tokenSymbol, setTokenSymbol] = useState("");
   const [buyAmount, setBuyAmount] = useState("0.5");
   const [maxSlippage, setMaxSlippage] = useState("15");
   const [priorityFee, setPriorityFee] = useState("0.005");
   const [autoSell, setAutoSell] = useState(false);
   const [takeProfitPercent, setTakeProfitPercent] = useState("100");
+  const sniperInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // When armed, simulate periodic checks
+  const startSniping = useCallback(() => {
+    if (sniperInterval.current) clearInterval(sniperInterval.current);
+
+    // Execute immediate buy simulation
+    const executeBuy = async () => {
+      const result = await sim.simulateBuy(
+        tokenAddress,
+        tokenSymbol || tokenAddress.slice(0, 6),
+        parseFloat(buyAmount),
+        'sniper'
+      );
+      if (result) {
+        setIsArmed(false);
+        if (sniperInterval.current) clearInterval(sniperInterval.current);
+        toast({
+          title: "🎯 Sniper Hit!",
+          description: `Bought ${result.token_amount.toFixed(2)} ${tokenSymbol || 'tokens'} for ${buyAmount} SOL`,
+        });
+      }
+    };
+
+    // Simulate finding liquidity after 2-5 seconds
+    const delay = 2000 + Math.random() * 3000;
+    sniperInterval.current = setTimeout(executeBuy, delay) as any;
+  }, [tokenAddress, tokenSymbol, buyAmount, sim, toast]);
+
+  useEffect(() => {
+    return () => {
+      if (sniperInterval.current) clearInterval(sniperInterval.current);
+    };
+  }, []);
 
   const handleArm = () => {
     if (!tokenAddress) {
       toast({ title: "Missing token", description: "Enter a token address to snipe", variant: "destructive" });
       return;
     }
-    setIsArmed(!isArmed);
-    toast({
-      title: isArmed ? "Sniper Disarmed" : "Sniper Armed 🎯",
-      description: isArmed
-        ? "Buy sniper has been disarmed"
-        : `Watching for liquidity on ${tokenAddress.slice(0, 8)}...`,
-    });
+    if (!isArmed) {
+      setIsArmed(true);
+      startSniping();
+      toast({ title: "Sniper Armed 🎯", description: `Watching for ${tokenAddress.slice(0, 8)}...` });
+    } else {
+      setIsArmed(false);
+      if (sniperInterval.current) clearInterval(sniperInterval.current);
+      toast({ title: "Sniper Disarmed", description: "Buy sniper deactivated" });
+    }
   };
 
   return (
@@ -47,12 +88,23 @@ export const BuySniper = () => {
 
       <div className="space-y-3">
         <div>
-          <Label className="text-xs text-muted-foreground">Token Address to Snipe</Label>
+          <Label className="text-xs text-muted-foreground">Token Address</Label>
           <Input
             placeholder="Paste token mint address..."
             value={tokenAddress}
             onChange={(e) => setTokenAddress(e.target.value)}
             className="bg-muted/30 border-border text-sm font-mono"
+            disabled={isArmed}
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground">Token Symbol (optional)</Label>
+          <Input
+            placeholder="e.g. BONK"
+            value={tokenSymbol}
+            onChange={(e) => setTokenSymbol(e.target.value)}
+            className="bg-muted/30 border-border text-sm"
             disabled={isArmed}
           />
         </div>
@@ -127,13 +179,16 @@ export const BuySniper = () => {
 
         <Button
           onClick={handleArm}
+          disabled={sim.isLoading}
           className={`w-full ${isArmed ? 'bg-destructive hover:bg-destructive/90' : 'bg-primary hover:bg-primary/90'} text-primary-foreground`}
           size="sm"
         >
-          {isArmed ? (
+          {sim.isLoading ? (
+            <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2" /> Processing...</>
+          ) : isArmed ? (
             <><Crosshair className="h-4 w-4 mr-2" /> Disarm Sniper</>
           ) : (
-            <><Zap className="h-4 w-4 mr-2" /> Arm Sniper</>
+            <><Zap className="h-4 w-4 mr-2" /> Arm Sniper (Paper)</>
           )}
         </Button>
       </div>
