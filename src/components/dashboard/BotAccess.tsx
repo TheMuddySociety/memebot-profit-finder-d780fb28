@@ -69,6 +69,19 @@ export const BotAccess = () => {
           </div>
         )}
 
+        {/* Kill Switch */}
+        {walletAddress && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-2 h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={handleKillAll}
+          >
+            <OctagonX className="h-3.5 w-3.5 mr-1.5" />
+            Kill All Bots
+          </Button>
+        )}
+
         {walletAddress && sim.wallet && (
           <div className="flex items-center justify-between mt-1">
             <div className="flex items-center gap-1.5 text-xs">
@@ -143,16 +156,16 @@ export const BotAccess = () => {
             </TabsList>
 
             <TabsContent value="sniper" className="mt-0">
-              <BuySniper sim={sim} isLive={isLive} />
+              <BuySniper sim={sim} isLive={isLive} killSignal={killSignal} />
             </TabsContent>
             <TabsContent value="dca" className="mt-0">
-              <DCABot sim={sim} isLive={isLive} />
+              <DCABot sim={sim} isLive={isLive} killSignal={killSignal} />
             </TabsContent>
             <TabsContent value="volume" className="mt-0">
-              <VolumeBot sim={sim} isLive={isLive} />
+              <VolumeBot sim={sim} isLive={isLive} killSignal={killSignal} />
             </TabsContent>
             <TabsContent value="auto" className="mt-0">
-              <AutoStrategies sim={sim} isLive={isLive} />
+              <AutoStrategies sim={sim} isLive={isLive} killSignal={killSignal} />
             </TabsContent>
           </Tabs>
         )}
