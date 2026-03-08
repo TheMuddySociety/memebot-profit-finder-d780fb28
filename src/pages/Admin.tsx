@@ -169,9 +169,10 @@ const Admin = () => {
           </section>
           
           <Tabs defaultValue="tokens" className="w-full max-w-4xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="tokens">Tokens</TabsTrigger>
               <TabsTrigger value="collections">NFT Collections</TabsTrigger>
+              <TabsTrigger value="payments">Access Payments</TabsTrigger>
             </TabsList>
             
             <TabsContent value="tokens">
