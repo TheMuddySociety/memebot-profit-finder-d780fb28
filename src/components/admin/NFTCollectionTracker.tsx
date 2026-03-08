@@ -62,7 +62,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
   fake_volume: "Fake Volume",
 };
 
-export function NFTCollectionTracker() {
+export function NFTCollectionTracker({ crossRefWallets = [] }: { crossRefWallets?: string[] }) {
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -256,7 +256,12 @@ export function NFTCollectionTracker() {
                         onClick={() => setExpandedCol(isExpanded ? null : col.address)}
                       >
                         <td className="p-3">
-                          <div className="font-medium text-foreground">{col.name}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-foreground">{col.name}</span>
+                            {(crossRefWallets.includes(col.address) || crossRefWallets.includes(col.devWallet)) && (
+                              <Badge className="bg-purple-900/30 text-purple-400 border-purple-800 text-[9px]">X-REF DEV</Badge>
+                            )}
+                          </div>
                           <div className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">{col.address}</div>
                           <div className="text-[10px] text-muted-foreground mt-0.5">
                             Dev: {col.devWallet.slice(0, 6)}...{col.devWallet.slice(-4)} · {col.transactionCount} txns

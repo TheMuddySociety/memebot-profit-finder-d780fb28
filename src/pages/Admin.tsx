@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +64,28 @@ const Admin = () => {
     toast.success("Copied to clipboard");
   };
 
+  // Cross-reference: compute wallets appearing in both trackers
+  const { devCrossRef, nftCrossRef } = useMemo(() => {
+    const devWallets: string[] = [];
+    const nftWallets: string[] = [];
+    try {
+      const devData = JSON.parse(localStorage.getItem("trackedDevs") || "[]");
+      devWallets.push(...devData.map((d: any) => d.walletAddress));
+    } catch {}
+    try {
+      const nftData = JSON.parse(localStorage.getItem("trackedNFTCollections") || "[]");
+      for (const c of nftData) {
+        nftWallets.push(c.address);
+        if (c.devWallet) nftWallets.push(c.devWallet);
+      }
+    } catch {}
+    // Dev wallets that also appear as NFT collection addresses or dev wallets
+    const devCrossRef = devWallets.filter(w => nftWallets.includes(w));
+    // NFT addresses/devWallets that also appear in dev tracker
+    const nftCrossRef = [...new Set(nftWallets)].filter(w => devWallets.includes(w));
+    return { devCrossRef, nftCrossRef };
+  }, [isAdmin]); // re-compute when admin loads
+
   if (loading || !isAdmin) return null;
 
   return (
@@ -84,11 +106,11 @@ const Admin = () => {
             </TabsList>
 
             <TabsContent value="tokens">
-              <DevTokenTracker />
+              <DevTokenTracker crossRefWallets={devCrossRef} />
             </TabsContent>
 
             <TabsContent value="collections">
-              <NFTCollectionTracker />
+              <NFTCollectionTracker crossRefWallets={nftCrossRef} />
             </TabsContent>
 
             <TabsContent value="payments">
