@@ -86,6 +86,7 @@ const Admin = () => {
       
       setIsAdmin(true);
       setLoading(false);
+      fetchPayments();
     };
     
     checkAdminAccess();
