@@ -106,11 +106,11 @@ const Admin = () => {
             </TabsList>
 
             <TabsContent value="tokens">
-              <DevTokenTracker />
+              <DevTokenTracker crossRefWallets={devCrossRef} />
             </TabsContent>
 
             <TabsContent value="collections">
-              <NFTCollectionTracker />
+              <NFTCollectionTracker crossRefWallets={nftCrossRef} />
             </TabsContent>
 
             <TabsContent value="payments">
