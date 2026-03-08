@@ -14,7 +14,7 @@ import {
 import {
   ExternalLink, TrendingUp, TrendingDown, Users, Droplets,
   BarChart3, Clock, Copy, ArrowUpRight, ArrowDownRight, Loader2,
-  ArrowRightLeft, ChevronDown, ChevronUp,
+  ArrowRightLeft, ChevronDown, ChevronUp, Bell,
 } from 'lucide-react';
 import { MemeToken } from '@/types/memeToken';
 import { cn } from '@/lib/utils';
