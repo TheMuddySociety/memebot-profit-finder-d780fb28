@@ -41,6 +41,7 @@ const Index = () => {
           <div className="lg:col-span-2 space-y-3">
             <TokenSwap />
             <TopMemecoins />
+            <AIToolsAgents />
           </div>
           
           {/* Sidebar */}
