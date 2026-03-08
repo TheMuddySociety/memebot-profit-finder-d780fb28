@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { tokenWebSocketService } from '@/services/websocket/TokenWebSocketService';
 import { TokenDetailModal } from './TokenDetailModal';
+import { CreateAlertDialog } from './CreateAlertDialog';
+import { usePriceAlerts } from '@/hooks/usePriceAlerts';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 type DataSource = 'birdeye' | 'launchpad';
 
