@@ -467,6 +467,3 @@ async function getLeaderboard(supabase: any, limit: number) {
 
   return leaderboard.slice(0, limit);
 }
-  const result = await response.json();
-  return result.data || {};
-}
