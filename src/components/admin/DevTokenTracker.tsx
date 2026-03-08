@@ -25,7 +25,7 @@ interface TrackedDev {
   riskLevel: "low" | "medium" | "high" | "critical";
   addedAt: string;
   notes: string;
-  tokens?: { mint: string; name: string; symbol: string; supply: number; burnt: boolean }[];
+  tokens?: { mint: string; name: string; symbol: string; supply: number; burnt: boolean; createdAt?: number | null }[];
   transactionCount?: number;
   suspiciousPatterns?: number;
   patternFlags?: PatternFlag[];
