@@ -6,6 +6,7 @@ import { TokenSwap } from "@/components/dashboard/TokenSwap";
 import { BotAccess } from "@/components/dashboard/BotAccess";
 import { MiniChart } from "@/components/dashboard/MiniChart";
 import { LiveSignalFeed } from "@/components/dashboard/LiveSignalFeed";
+import { AIToolsAgents } from "@/components/dashboard/AIToolsAgents";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
