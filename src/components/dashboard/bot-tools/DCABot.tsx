@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// @ts-ignore - timer type compatibility
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Clock, Play, Pause } from "lucide-react";
@@ -74,10 +75,10 @@ export const DCABot = ({ sim }: Props) => {
     // First order immediately
     executeDCAOrder();
 
-    dcaInterval.current = setInterval(() => {
+    dcaInterval.current = window.setInterval(() => {
       const delay = useRandomDelay ? Math.random() * 2000 : 0;
-      setTimeout(executeDCAOrder, delay);
-    }, baseInterval);
+      window.setTimeout(executeDCAOrder, delay);
+    }, baseInterval) as unknown as NodeJS.Timeout;
   };
 
   const stopDCA = () => {
