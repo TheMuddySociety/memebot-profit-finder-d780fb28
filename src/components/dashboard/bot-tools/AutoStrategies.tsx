@@ -57,7 +57,11 @@ const riskColors: Record<string, string> = {
   High: "bg-destructive/20 text-destructive border-destructive/30",
 };
 
-export const AutoStrategies = () => {
+interface Props {
+  sim: any;
+}
+
+export const AutoStrategies = ({ sim }: Props) => {
   const { toast } = useToast();
   const [strategies, setStrategies] = useState<Strategy[]>(INITIAL_STRATEGIES);
   const [maxBudget, setMaxBudget] = useState("1.0");
@@ -67,9 +71,15 @@ export const AutoStrategies = () => {
       prev.map((s) => {
         if (s.id === id) {
           const next = !s.enabled;
+          // Save config to backend
+          sim.saveBotConfig('auto', {
+            strategies: prev.map(st => st.id === id ? { ...st, enabled: next } : st).filter(st => st.enabled).map(st => st.id),
+            maxBudget: parseFloat(maxBudget),
+          }, next || prev.filter(st => st.id !== id).some(st => st.enabled));
+
           toast({
             title: next ? `${s.name} Enabled` : `${s.name} Disabled`,
-            description: next ? s.description : `Strategy deactivated`,
+            description: next ? `Paper trading: ${s.description}` : `Strategy deactivated`,
           });
           return { ...s, enabled: next };
         }
