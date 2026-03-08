@@ -236,9 +236,12 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
   const { priceData, holders, trades, loading, dataSource } = useTokenDetail(token, open);
 
   const [showSwap, setShowSwap] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const swapContainerId = `modal-swap-${token?.id || 'none'}`;
 
-  // Initialize Jupiter swap when panel opens
+  const QUICK_BUY_AMOUNTS = [0.1, 0.5, 1, 5];
+
+  // Initialize Jupiter swap when panel opens or amount changes
   useEffect(() => {
     if (!showSwap || !token?.tokenAddress) return;
 
@@ -251,6 +254,7 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
             fixedMint: undefined,
             initialInputMint: "So11111111111111111111111111111111111111112",
             initialOutputMint: token.tokenAddress,
+            initialAmount: selectedAmount ? String(selectedAmount * 1e9) : undefined,
             referralAccount: "F4qYkXAcogrjQHw3ngKWjisMmmRFR4Ea6c9DCCpK5gBr",
             referralFee: 150,
           },
@@ -263,7 +267,12 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [showSwap, token?.tokenAddress, swapContainerId]);
+  }, [showSwap, token?.tokenAddress, swapContainerId, selectedAmount]);
+
+  const handleQuickBuy = (amount: number) => {
+    setSelectedAmount(amount);
+    if (!showSwap) setShowSwap(true);
+  };
 
   if (!token) return null;
 
@@ -479,6 +488,33 @@ export function TokenDetailModal({ token, open, onOpenChange }: TokenDetailModal
               </button>
               {showSwap && (
                 <div className="border-t border-border/30">
+                  {/* Quick Buy Presets */}
+                  <div className="px-3 pt-3 pb-1">
+                    <p className="text-[11px] text-muted-foreground mb-2">⚡ Quick Buy</p>
+                    <div className="flex gap-2">
+                      {QUICK_BUY_AMOUNTS.map((amount) => (
+                        <Button
+                          key={amount}
+                          size="sm"
+                          variant={selectedAmount === amount ? "default" : "outline"}
+                          className={cn(
+                            "flex-1 h-9 text-xs font-mono gap-1 transition-all",
+                            selectedAmount === amount
+                              ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                              : "border-border/50 hover:border-primary/50 hover:bg-primary/5"
+                          )}
+                          onClick={() => handleQuickBuy(amount)}
+                        >
+                          {amount} SOL
+                        </Button>
+                      ))}
+                    </div>
+                    {selectedAmount && token.price > 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
+                        ≈ {((selectedAmount * 67) / token.price).toLocaleString(undefined, { maximumFractionDigits: 0 })} {token.symbol} at current price
+                      </p>
+                    )}
+                  </div>
                   <div
                     id={swapContainerId}
                     className="min-h-[380px] w-full p-3"
