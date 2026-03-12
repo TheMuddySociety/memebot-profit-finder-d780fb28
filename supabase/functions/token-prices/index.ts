@@ -48,7 +48,7 @@ serve(async (req) => {
 
       case 'token_overview':
         if (!address) return err('address is required', 400);
-        return ok(await fetchTokenOverview(address, HELIUS_API_KEY));
+        return ok(await fetchTokenOverview(address, HELIUS_API_KEY, JUPITER_API_KEY));
 
       case 'token_trades':
         if (!address) return err('address is required', 400);
