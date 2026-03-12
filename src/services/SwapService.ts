@@ -78,4 +78,17 @@ export class SwapService {
   static async getAllTokens() {
     return TokenService.getAllTokens();
   }
+
+  /**
+   * Perform a swap using Jupiter Ultra API (gasless, best execution)
+   */
+  static async ultraSwap(
+    wallet: any,
+    inputMint: string,
+    outputMint: string,
+    amount: string,
+    swapMode: 'ExactIn' | 'ExactOut' = 'ExactIn'
+  ) {
+    return JupiterUltraService.swap(wallet, inputMint, outputMint, amount, swapMode);
+  }
 }
