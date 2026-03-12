@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const JUPITER_PRICE_API = 'https://api.jup.ag/price/v2';
+const JUPITER_PRICE_API = 'https://api.jup.ag/price/v3';
 const COINGECKO_BASE = 'https://api.coingecko.com/api/v3';
 const HELIUS_BASE = 'https://api.helius.xyz';
 
@@ -30,13 +30,15 @@ serve(async (req) => {
   const HELIUS_API_KEY = Deno.env.get('HELIUS_API_KEY');
   if (!HELIUS_API_KEY) return err('HELIUS_API_KEY is not configured');
 
+  const JUPITER_API_KEY = Deno.env.get('JUPITER_API_KEY');
+
   try {
     const body = await req.json();
     const { action, addresses, address } = body;
 
     switch (action) {
       case 'prices':
-        return ok(await fetchJupiterPrices(addresses));
+        return ok(await fetchJupiterPrices(addresses, JUPITER_API_KEY));
 
       case 'token_info':
         return ok(await fetchHeliusTokenInfo(addresses, HELIUS_API_KEY));
@@ -46,7 +48,7 @@ serve(async (req) => {
 
       case 'token_overview':
         if (!address) return err('address is required', 400);
-        return ok(await fetchTokenOverview(address, HELIUS_API_KEY));
+        return ok(await fetchTokenOverview(address, HELIUS_API_KEY, JUPITER_API_KEY));
 
       case 'token_trades':
         if (!address) return err('address is required', 400);
@@ -54,7 +56,7 @@ serve(async (req) => {
 
       case 'price_history':
         if (!address) return err('address is required', 400);
-        return ok(await fetchPriceHistory(address, body.interval || '30m', body.time_from, body.time_to));
+        return ok(await fetchPriceHistory(address, body.interval || '30m', body.time_from, body.time_to, JUPITER_API_KEY));
 
       case 'token_holders':
         if (!address) return err('address is required', 400);
@@ -72,12 +74,14 @@ serve(async (req) => {
 
 // ── Jupiter Price API (free, no key needed) ─────────────────────────
 
-async function fetchJupiterPrices(addresses: string[]) {
+async function fetchJupiterPrices(addresses: string[], apiKey?: string) {
   if (!addresses || addresses.length === 0) return {};
   
-  // Jupiter supports up to 100 addresses per request
   const ids = addresses.join(',');
-  const response = await fetch(`${JUPITER_PRICE_API}?ids=${ids}`);
+  const headers: Record<string, string> = {};
+  if (apiKey) headers['x-api-key'] = apiKey;
+  
+  const response = await fetch(`${JUPITER_PRICE_API}?ids=${ids}`, { headers });
   
   if (!response.ok) {
     throw new Error(`Jupiter price API failed [${response.status}]: ${await response.text()}`);
@@ -86,13 +90,11 @@ async function fetchJupiterPrices(addresses: string[]) {
   const result = await response.json();
   const prices: Record<string, { value: number }> = {};
   
-  // Jupiter returns { data: { [mint]: { id, type, price } } }
-  if (result.data) {
-    for (const [mint, info] of Object.entries(result.data)) {
-      const priceData = info as { price?: string };
-      if (priceData.price) {
-        prices[mint] = { value: parseFloat(priceData.price) };
-      }
+  // V3 returns flat: { [mint]: { usdPrice, decimals, blockId, priceChange24h } }
+  for (const [mint, info] of Object.entries(result)) {
+    const priceData = info as { usdPrice?: number };
+    if (priceData?.usdPrice) {
+      prices[mint] = { value: priceData.usdPrice };
     }
   }
   
@@ -141,11 +143,13 @@ async function fetchTrendingTokens() {
 
 // ── Token Overview via Helius DAS + Jupiter ─────────────────────────
 
-async function fetchTokenOverview(address: string, apiKey: string) {
-  // Fetch price from Jupiter
-  const pricePromise = fetch(`${JUPITER_PRICE_API}?ids=${address}`)
+async function fetchTokenOverview(address: string, apiKey: string, jupiterApiKey?: string) {
+  const headers: Record<string, string> = {};
+  if (jupiterApiKey) headers['x-api-key'] = jupiterApiKey;
+  
+  const pricePromise = fetch(`${JUPITER_PRICE_API}?ids=${address}`, { headers })
     .then(r => r.json())
-    .catch(() => ({ data: {} }));
+    .catch(() => ({}));
 
   // Fetch metadata from Helius DAS
   const rpcUrl = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
@@ -162,7 +166,8 @@ async function fetchTokenOverview(address: string, apiKey: string) {
 
   const [priceResult, metaResult] = await Promise.all([pricePromise, metaPromise]);
 
-  const priceData = priceResult?.data?.[address];
+  // V3 flat response: { [mint]: { usdPrice, ... } }
+  const priceInfo = priceResult?.[address];
   const asset = metaResult?.result || {};
   const content = asset?.content || {};
 
@@ -171,7 +176,7 @@ async function fetchTokenOverview(address: string, apiKey: string) {
     name: content?.metadata?.name || '',
     symbol: content?.metadata?.symbol || '',
     logo: content?.links?.image || content?.files?.[0]?.uri || '',
-    price: priceData?.price ? parseFloat(priceData.price) : 0,
+    price: priceInfo?.usdPrice || 0,
     decimals: asset?.token_info?.decimals || 0,
     supply: asset?.token_info?.supply || 0,
   };
@@ -221,16 +226,14 @@ async function fetchTokenTrades(address: string, apiKey: string, limit: number) 
 
 // ── Price History via CoinGecko (free, uses coingecko ID mapping) ───
 
-async function fetchPriceHistory(address: string, _interval: string, _timeFrom?: number, _timeTo?: number) {
-  // Jupiter doesn't have history, use a simple approach: return empty for now
-  // CoinGecko requires coin ID not Solana address for history
-  // Return mock-like recent price points based on current price
+async function fetchPriceHistory(address: string, _interval: string, _timeFrom?: number, _timeTo?: number, jupiterApiKey?: string) {
   try {
-    const priceResp = await fetch(`${JUPITER_PRICE_API}?ids=${address}`);
+    const headers: Record<string, string> = {};
+    if (jupiterApiKey) headers['x-api-key'] = jupiterApiKey;
+    
+    const priceResp = await fetch(`${JUPITER_PRICE_API}?ids=${address}`, { headers });
     const priceData = await priceResp.json();
-    const currentPrice = priceData?.data?.[address]?.price 
-      ? parseFloat(priceData.data[address].price) 
-      : 0;
+    const currentPrice = priceData?.[address]?.usdPrice || 0;
 
     if (currentPrice === 0) return [];
 
