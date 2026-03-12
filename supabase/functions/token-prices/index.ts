@@ -149,7 +149,7 @@ async function fetchTokenOverview(address: string, apiKey: string, jupiterApiKey
   
   const pricePromise = fetch(`${JUPITER_PRICE_API}?ids=${address}`, { headers })
     .then(r => r.json())
-    .catch(() => ({ data: {} }));
+    .catch(() => ({}));
 
   // Fetch metadata from Helius DAS
   const rpcUrl = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
