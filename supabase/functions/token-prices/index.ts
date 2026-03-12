@@ -227,12 +227,12 @@ async function fetchTokenTrades(address: string, apiKey: string, limit: number) 
 
 // ── Price History via CoinGecko (free, uses coingecko ID mapping) ───
 
-async function fetchPriceHistory(address: string, _interval: string, _timeFrom?: number, _timeTo?: number) {
-  // Jupiter doesn't have history, use a simple approach: return empty for now
-  // CoinGecko requires coin ID not Solana address for history
-  // Return mock-like recent price points based on current price
+async function fetchPriceHistory(address: string, _interval: string, _timeFrom?: number, _timeTo?: number, jupiterApiKey?: string) {
   try {
-    const priceResp = await fetch(`${JUPITER_PRICE_API}?ids=${address}`);
+    const headers: Record<string, string> = {};
+    if (jupiterApiKey) headers['x-api-key'] = jupiterApiKey;
+    
+    const priceResp = await fetch(`${JUPITER_PRICE_API}?ids=${address}`, { headers });
     const priceData = await priceResp.json();
     const currentPrice = priceData?.data?.[address]?.price 
       ? parseFloat(priceData.data[address].price) 
