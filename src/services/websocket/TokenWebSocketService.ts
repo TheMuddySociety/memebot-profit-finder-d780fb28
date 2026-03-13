@@ -44,7 +44,27 @@ class TokenWebSocketService {
   private async pollPrices() {
     if (this.subscribedTokens.size === 0) return;
 
-    const addresses = Array.from(this.subscribedTokens)
+    // Separate tokens: bonding curve tokens (no DEX) vs migrated tokens
+    const bondingCurveTokens: string[] = [];
+    const dexTokens: string[] = [];
+
+    this.subscribedTokens.forEach(id => {
+      const token = this.tokenData.get(id);
+      if (!token?.tokenAddress) return;
+      // Tokens still on bonding curve have very low liquidity and no DEX pair
+      // Jupiter/DexScreener won't have prices for them — skip the API call
+      if (token.bondingCurveProgress !== undefined && token.bondingCurveProgress < 100) {
+        bondingCurveTokens.push(id);
+      } else {
+        dexTokens.push(id);
+      }
+    });
+
+    // For bonding curve tokens, price is already derived from Bullme data (marketCap/supply)
+    // No update needed — they refresh via the main data polling
+
+    // For DEX-listed tokens, fetch live prices from Jupiter
+    const addresses = dexTokens
       .map(id => this.tokenData.get(id)?.tokenAddress)
       .filter(Boolean) as string[];
 
@@ -65,7 +85,7 @@ class TokenWebSocketService {
       const priceData = data.data as Record<string, { value: number; updateUnixTime: number; priceChange24h?: number }>;
       const updates = new Map<string, Partial<MemeToken>>();
 
-      this.subscribedTokens.forEach(tokenId => {
+      dexTokens.forEach(tokenId => {
         const token = this.tokenData.get(tokenId);
         if (!token?.tokenAddress) return;
 
@@ -82,8 +102,6 @@ class TokenWebSocketService {
         };
 
         updates.set(tokenId, update);
-
-        // Update local cache
         this.tokenData.set(tokenId, { ...token, ...update });
       });
 

@@ -72,7 +72,7 @@ serve(async (req) => {
   }
 });
 
-// ── Jupiter Price API (free, no key needed) ─────────────────────────
+// ── Jupiter Price API + Birdeye fallback ────────────────────────────
 
 async function fetchJupiterPrices(addresses: string[], apiKey?: string) {
   if (!addresses || addresses.length === 0) return {};
@@ -84,13 +84,13 @@ async function fetchJupiterPrices(addresses: string[], apiKey?: string) {
   const response = await fetch(`${JUPITER_PRICE_API}?ids=${ids}`, { headers });
   
   if (!response.ok) {
-    throw new Error(`Jupiter price API failed [${response.status}]: ${await response.text()}`);
+    console.warn(`Jupiter price API failed [${response.status}], trying Birdeye fallback`);
+    return fetchBirdeyePrices(addresses);
   }
   
   const result = await response.json();
   const prices: Record<string, { value: number }> = {};
   
-  // V3 returns flat: { [mint]: { usdPrice, decimals, blockId, priceChange24h } }
   for (const [mint, info] of Object.entries(result)) {
     const priceData = info as { usdPrice?: number };
     if (priceData?.usdPrice) {
@@ -98,6 +98,70 @@ async function fetchJupiterPrices(addresses: string[], apiKey?: string) {
     }
   }
   
+  // Find addresses that Jupiter didn't return prices for
+  const missing = addresses.filter(addr => !prices[addr]);
+  
+  if (missing.length > 0) {
+    console.log(`[token-prices] Jupiter missing ${missing.length} tokens, trying DexScreener fallback`);
+    const fallback = await fetchDexScreenerPrices(missing);
+    for (const [addr, data] of Object.entries(fallback)) {
+      prices[addr] = data;
+    }
+  }
+  
+  return prices;
+}
+
+// ── DexScreener fallback for tokens not on Jupiter ──────────────────
+
+async function fetchDexScreenerPrices(addresses: string[]): Promise<Record<string, { value: number }>> {
+  if (addresses.length === 0) return {};
+  const prices: Record<string, { value: number }> = {};
+
+  // DexScreener supports up to 30 addresses per call
+  const batches: string[][] = [];
+  for (let i = 0; i < addresses.length; i += 30) {
+    batches.push(addresses.slice(i, i + 30));
+  }
+
+  await Promise.allSettled(
+    batches.map(async (batch) => {
+      try {
+        const resp = await fetch(
+          `https://api.dexscreener.com/tokens/v1/solana/${batch.join(',')}`
+        );
+        if (!resp.ok) {
+          console.warn(`DexScreener failed [${resp.status}]`);
+          return;
+        }
+        const pairs = await resp.json();
+        if (!Array.isArray(pairs)) return;
+
+        // Group by baseToken address, take highest-liquidity pair
+        const bestByToken = new Map<string, { price: number; liq: number }>();
+        for (const pair of pairs) {
+          const addr = pair.baseToken?.address;
+          const price = parseFloat(pair.priceUsd);
+          if (!addr || isNaN(price) || price <= 0) continue;
+          const liq = pair.liquidity?.usd || 0;
+          const existing = bestByToken.get(addr);
+          if (!existing || liq > existing.liq) {
+            bestByToken.set(addr, { price, liq });
+          }
+        }
+
+        for (const addr of batch) {
+          const entry = bestByToken.get(addr);
+          if (entry) {
+            prices[addr] = { value: entry.price };
+          }
+        }
+      } catch (e) {
+        console.error('DexScreener batch error:', e);
+      }
+    })
+  );
+
   return prices;
 }
 
